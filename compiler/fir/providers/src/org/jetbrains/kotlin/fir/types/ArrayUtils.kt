@@ -35,6 +35,10 @@ fun ConeTypeProjection.createArrayType(nullable: Boolean = false, createPrimitiv
     return StandardClassIds.Array.constructClassLikeType(arrayOf(this), nullable)
 }
 
+fun ConeTypeProjection.createListType(nullable: Boolean = false): ConeClassLikeType {
+    return StandardClassIds.List.constructClassLikeType(arrayOf(this), nullable)
+}
+
 fun ConeKotlinType.arrayElementType(checkUnsignedArrays: Boolean = true): ConeKotlinType? {
     return when (val argument = arrayElementTypeArgument(checkUnsignedArrays)) {
         is ConeKotlinTypeProjection -> argument.type

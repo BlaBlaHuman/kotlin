@@ -166,7 +166,7 @@ sealed class KtFakeSourceElementKind(final override val shouldSkipErrorTypeRepor
     object DataClassGeneratedMembers : KtFakeSourceElementKind(shouldSkipErrorTypeReporting = true)
 
     // (vararg x: Int) --> (x: Array<out Int>) where array type ref has a fake source kind
-    object ArrayTypeFromVarargParameter : KtFakeSourceElementKind()
+    object UnderlyingTypeFromVarargParameter : KtFakeSourceElementKind()
 
     // val (a,b) = x --> val a = x.component1(); val b = x.component2()
     // where componentN calls will have the fake source elements refer to the corresponding KtDestructuringDeclarationEntry

@@ -133,6 +133,8 @@ abstract class IrBuiltIns {
     abstract val primitiveArrayElementTypes: Map<IrClassSymbol, IrType?>
     abstract val primitiveArrayForType: Map<IrType?, IrClassSymbol>
 
+//    abstract val listElementTypes: Map<IrClassSymbol, IrType?>
+
     abstract val unsignedTypesToUnsignedArrays: Map<UnsignedType, IrClassSymbol>
     abstract val unsignedArraysElementTypes: Map<IrClassSymbol, IrType?>
 

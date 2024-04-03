@@ -539,10 +539,10 @@ private class ElementsToShortenCollector(
         get() {
             val sourcePsi = when {
                 // array type for vararg parameters is not present in the code, so no need to handle it
-                delegatedTypeRef?.source?.kind == KtFakeSourceElementKind.ArrayTypeFromVarargParameter -> null
+                delegatedTypeRef?.source?.kind == KtFakeSourceElementKind.UnderlyingTypeFromVarargParameter -> null
 
                 // but the array's underlying type is present with a fake source, and needs to be handled
-                source?.kind == KtFakeSourceElementKind.ArrayTypeFromVarargParameter -> psi
+                source?.kind == KtFakeSourceElementKind.UnderlyingTypeFromVarargParameter -> psi
 
                 else -> realPsi
             }

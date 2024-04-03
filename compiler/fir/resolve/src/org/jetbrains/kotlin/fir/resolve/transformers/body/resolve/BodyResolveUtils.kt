@@ -39,7 +39,7 @@ internal fun remapArgumentsWithVararg(
     // Create a FirVarargArgumentExpression for the vararg arguments.
     // The order of arguments in the mapping must be preserved for FIR2IR, hence we have to find where the vararg arguments end.
     // FIR2IR uses the mapping order to determine if arguments need to be reordered.
-    val varargElementType = varargArrayType.arrayElementType()?.approximateIntegerLiteralType()
+    val varargElementType = varargArrayType.typeArguments.first().type?.approximateIntegerLiteralType()
     val argumentList = argumentMapping.keys.toList()
     var indexAfterVarargs = argumentList.size
     val newArgumentMapping = linkedMapOf<FirExpression, FirValueParameter>()

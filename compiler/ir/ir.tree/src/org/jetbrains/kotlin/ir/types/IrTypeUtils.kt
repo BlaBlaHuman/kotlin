@@ -10,6 +10,7 @@ import org.jetbrains.kotlin.ir.IrBuiltIns
 import org.jetbrains.kotlin.ir.symbols.*
 import org.jetbrains.kotlin.ir.util.fqNameWhenAvailable
 import org.jetbrains.kotlin.types.AbstractTypeChecker
+import org.jetbrains.kotlin.types.checker.SimpleClassicTypeSystemContext.typeConstructor
 
 fun IrClassifierSymbol.superTypes(): List<IrType> = when (this) {
     is IrClassSymbol -> owner.superTypes
@@ -53,22 +54,22 @@ fun IrType.isNullable(): Boolean =
 val IrType.isBoxedArray: Boolean
     get() = classOrNull?.owner?.fqNameWhenAvailable == StandardNames.FqNames.array.toSafe()
 
-fun IrType.getArrayElementType(irBuiltIns: IrBuiltIns): IrType =
-    if (isBoxedArray) {
-        when (val argument = (this as IrSimpleType).arguments.singleOrNull()) {
-            is IrTypeProjection ->
-                argument.type
-            is IrStarProjection ->
-                irBuiltIns.anyNType
-            null ->
-                error("Unexpected array argument type: null")
-        }
-    } else {
-        val classifier = this.classOrNull!!
-        irBuiltIns.primitiveArrayElementTypes[classifier]
-            ?: irBuiltIns.unsignedArraysElementTypes[classifier]
-            ?: throw AssertionError("Primitive array expected: $classifier")
-    }
+fun IrType.getArrayElementType(irBuiltIns: IrBuiltIns): IrType = this.getClass()?.typeConstructorParameters?.first()?.defaultType ?: error("getArrayElementType")
+//    if (isBoxedArray) {
+//        when (val argument = (this as IrSimpleType).arguments.singleOrNull()) {
+//            is IrTypeProjection ->
+//                argument.type
+//            is IrStarProjection ->
+//                irBuiltIns.anyNType
+//            null ->
+//                error("Unexpected array argument type: null")
+//        }
+//    } else {
+//        val classifier = this.classOrNull!!
+//        irBuiltIns.primitiveArrayElementTypes[classifier]
+//            ?: irBuiltIns.unsignedArraysElementTypes[classifier]
+//            ?: throw AssertionError("Primitive array expected: $classifier")
+//    }
 
 fun IrType.toArrayOrPrimitiveArrayType(irBuiltIns: IrBuiltIns): IrType =
     if (isPrimitiveType()) {
