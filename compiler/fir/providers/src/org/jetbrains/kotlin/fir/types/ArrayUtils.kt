@@ -35,8 +35,8 @@ fun ConeTypeProjection.createArrayType(nullable: Boolean = false, createPrimitiv
     return StandardClassIds.Array.constructClassLikeType(arrayOf(this), nullable)
 }
 
-fun ConeTypeProjection.createListType(nullable: Boolean = false): ConeClassLikeType {
-    return StandardClassIds.List.constructClassLikeType(arrayOf(this), nullable)
+fun ConeTypeProjection.createIterableType(nullable: Boolean = false): ConeClassLikeType {
+    return StandardClassIds.MutableList.constructClassLikeType(arrayOf(this), nullable)
 }
 
 fun ConeKotlinType.arrayElementType(checkUnsignedArrays: Boolean = true): ConeKotlinType? {
@@ -49,10 +49,7 @@ fun ConeKotlinType.arrayElementType(checkUnsignedArrays: Boolean = true): ConeKo
 private fun ConeKotlinType.arrayElementTypeArgument(checkUnsignedArrays: Boolean = true): ConeTypeProjection? {
     val type = this.lowerBoundIfFlexible()
     if (type !is ConeClassLikeType) return null
-    val classId = type.lookupTag.classId
-    if (classId == StandardClassIds.Array) {
-        return type.typeArguments.first()
-    }
+
     val elementType = StandardClassIds.elementTypeByPrimitiveArrayType[classId] ?: runIf(checkUnsignedArrays) {
         StandardClassIds.elementTypeByUnsignedArrayType[classId]
     }
@@ -60,7 +57,8 @@ private fun ConeKotlinType.arrayElementTypeArgument(checkUnsignedArrays: Boolean
         return elementType.constructClassLikeType(emptyArray(), isNullable = false)
     }
 
-    return null
+    val classId = type.lookupTag.classId
+    return type.typeArguments.firstOrNull()
 }
 
 fun ConeKotlinType.varargElementType(): ConeKotlinType {

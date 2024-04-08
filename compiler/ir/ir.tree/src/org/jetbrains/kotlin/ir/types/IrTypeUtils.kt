@@ -56,7 +56,15 @@ val IrType.isBoxedArray: Boolean
 
 
 fun IrType.getArrayElementType(irBuiltIns: IrBuiltIns): IrType =
-    if (isBoxedArray) {
+    if (isPrimitiveArray()) {
+        println("getArrayElementType primitive")
+        val classifier = this.classOrNull!!
+        irBuiltIns.primitiveArrayElementTypes[classifier]
+            ?: irBuiltIns.unsignedArraysElementTypes[classifier]
+            ?: throw AssertionError("Primitive array expected: $classifier")
+    }
+    else {
+        println("getArrayElementType boxedarray")
         when (val argument = (this as IrSimpleType).arguments.singleOrNull()) {
             is IrTypeProjection ->
                 argument.type
@@ -65,13 +73,6 @@ fun IrType.getArrayElementType(irBuiltIns: IrBuiltIns): IrType =
             null ->
                 error("Unexpected array argument type: null")
         }
-    } else if (isPrimitiveArray()) {
-        val classifier = this.classOrNull!!
-        irBuiltIns.primitiveArrayElementTypes[classifier]
-            ?: irBuiltIns.unsignedArraysElementTypes[classifier]
-            ?: throw AssertionError("Primitive array expected: $classifier")
-    } else {
-        this.getClass()?.typeConstructorParameters?.first()?.defaultType ?: error("Expected collection type")
     }
 
 fun IrType.toArrayOrPrimitiveArrayType(irBuiltIns: IrBuiltIns): IrType =

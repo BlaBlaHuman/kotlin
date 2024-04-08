@@ -32,7 +32,7 @@ internal fun FirCallableDeclaration.transformTypeToUnderlyingType() {
     replaceReturnTypeRef(
         buildResolvedTypeRef {
             source = returnTypeRef.source
-            type = ConeKotlinTypeProjectionOut(returnType).createListType()
+            type = ConeKotlinTypeProjectionOut(returnType).createIterableType()
             annotations += returnTypeRef.annotations
             // ? do we really need replacing source of nested delegatedTypeRef ?
             delegatedTypeRef = returnTypeRef.copyWithNewSourceKind(KtFakeSourceElementKind.UnderlyingTypeFromVarargParameter)

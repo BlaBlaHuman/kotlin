@@ -477,6 +477,17 @@ class IrBuiltInsOverFir(
         findFunctions(kotlinPackage, Name.identifier("arrayOf")).distinct().single()
     }
 
+    override val listOf: IrSimpleFunctionSymbol by lazy {
+        findFunctions(StandardClassIds.BASE_COLLECTIONS_PACKAGE, Name.identifier("listOf")).distinct()
+            .single { it.descriptor.valueParameters.getOrNull(0)?.varargElementType != null }
+    }
+
+    override val mutableListOf: IrSimpleFunctionSymbol by lazy {
+        findFunctions(StandardClassIds.BASE_COLLECTIONS_PACKAGE, Name.identifier("mutableListOf")).distinct()
+            .single { it.descriptor.valueParameters.size == 0 }
+    }
+
+
     override fun getNonBuiltInFunctionsByExtensionReceiver(
         name: Name,
         vararg packageNameSegments: String,
