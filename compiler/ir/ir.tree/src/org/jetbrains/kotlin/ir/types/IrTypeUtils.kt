@@ -9,7 +9,10 @@ import org.jetbrains.kotlin.builtins.StandardNames
 import org.jetbrains.kotlin.ir.IrBuiltIns
 import org.jetbrains.kotlin.ir.symbols.*
 import org.jetbrains.kotlin.ir.util.fqNameWhenAvailable
+import org.jetbrains.kotlin.ir.util.isPrimitiveArray
+import org.jetbrains.kotlin.ir.util.render
 import org.jetbrains.kotlin.types.AbstractTypeChecker
+import org.jetbrains.kotlin.types.checker.SimpleClassicTypeSystemContext.extractTypeParameters
 
 fun IrClassifierSymbol.superTypes(): List<IrType> = when (this) {
     is IrClassSymbol -> owner.superTypes
@@ -53,8 +56,17 @@ fun IrType.isNullable(): Boolean =
 val IrType.isBoxedArray: Boolean
     get() = classOrNull?.owner?.fqNameWhenAvailable == StandardNames.FqNames.array.toSafe()
 
+
 fun IrType.getArrayElementType(irBuiltIns: IrBuiltIns): IrType =
-    if (isBoxedArray) {
+    if (isPrimitiveArray()) {
+        println("getArrayElementType primitive")
+        val classifier = this.classOrNull!!
+        irBuiltIns.primitiveArrayElementTypes[classifier]
+            ?: irBuiltIns.unsignedArraysElementTypes[classifier]
+            ?: throw AssertionError("Primitive array expected: $classifier")
+    }
+    else {
+        println("getArrayElementType boxedarray")
         when (val argument = (this as IrSimpleType).arguments.singleOrNull()) {
             is IrTypeProjection ->
                 argument.type
@@ -63,11 +75,6 @@ fun IrType.getArrayElementType(irBuiltIns: IrBuiltIns): IrType =
             null ->
                 error("Unexpected array argument type: null")
         }
-    } else {
-        val classifier = this.classOrNull!!
-        irBuiltIns.primitiveArrayElementTypes[classifier]
-            ?: irBuiltIns.unsignedArraysElementTypes[classifier]
-            ?: throw AssertionError("Primitive array expected: $classifier")
     }
 
 fun IrType.toArrayOrPrimitiveArrayType(irBuiltIns: IrBuiltIns): IrType =
