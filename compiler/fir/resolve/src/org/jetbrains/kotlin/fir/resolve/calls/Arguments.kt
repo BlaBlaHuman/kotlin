@@ -109,8 +109,8 @@ fun Candidate.resolveArgumentExpression(
                     isVararg = isVararg
                 )
             else
-                preprocessCallableReference(argument, expectedType, context, isVararg = isVararg)
-        is FirAnonymousFunctionExpression -> preprocessLambdaArgument(csBuilder, argument, expectedType, context, sink, isVararg = isVararg)
+                preprocessCallableReference(argument, expectedType, context)
+        is FirAnonymousFunctionExpression -> preprocessLambdaArgument(csBuilder, argument, expectedType, context, sink)
         is FirWrappedArgumentExpression -> resolveArgumentExpression(
             csBuilder,
             argument.expression,
@@ -429,6 +429,10 @@ private fun checkApplicabilityForArgumentType(
                 return
             }
         }
+
+
+        if (isVararg)
+            return
 
         if (!isReceiver) {
             sink.reportDiagnostic(subtypeError(expectedType))
