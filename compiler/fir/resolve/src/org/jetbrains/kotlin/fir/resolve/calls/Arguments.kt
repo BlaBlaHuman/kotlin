@@ -47,7 +47,7 @@ fun Candidate.resolveArgumentExpression(
     context: ResolutionContext,
     isReceiver: Boolean,
     isDispatch: Boolean,
-    isVararg: Boolean = false,
+    isSpread: Boolean = false,
 ) {
     when (argument) {
         is FirFunctionCall, is FirWhenExpression, is FirTryExpression, is FirCheckNotNullCall, is FirElvisExpression -> resolveSubCallArgument(
@@ -58,7 +58,7 @@ fun Candidate.resolveArgumentExpression(
             context,
             isReceiver,
             isDispatch,
-            isVararg = isVararg
+            isSpread = isSpread
         )
         // x?.bar() is desugared to `x SAFE-CALL-OPERATOR { $not-null-receiver$.bar() }`
         //
@@ -78,7 +78,7 @@ fun Candidate.resolveArgumentExpression(
                     isReceiver,
                     isDispatch,
                     useNullableArgumentType = true,
-                    isVararg = isVararg
+                    isSpread = isSpread
                 )
             } else {
                 // Assignment
@@ -92,7 +92,7 @@ fun Candidate.resolveArgumentExpression(
                     isDispatch = false,
                     sink = sink,
                     context = context,
-                    isVararg = isVararg
+                    isSpread = isSpread
                 )
             }
         }
@@ -106,7 +106,7 @@ fun Candidate.resolveArgumentExpression(
                     context,
                     isReceiver,
                     isDispatch,
-                    isVararg = isVararg
+                    isSpread = isSpread
                 )
             else
                 preprocessCallableReference(argument, expectedType, context)
@@ -119,7 +119,7 @@ fun Candidate.resolveArgumentExpression(
             context,
             isReceiver,
             isDispatch,
-            isVararg = isVararg
+            isSpread = isSpread
         )
         is FirBlock -> resolveBlockArgument(
             csBuilder,
@@ -129,9 +129,9 @@ fun Candidate.resolveArgumentExpression(
             context,
             isReceiver,
             isDispatch,
-            isVararg =isVararg
+            isSpread =isSpread
         )
-        else -> resolvePlainExpressionArgument(csBuilder, argument, expectedType, sink, context, isReceiver, isDispatch, isVararg = isVararg)
+        else -> resolvePlainExpressionArgument(csBuilder, argument, expectedType, sink, context, isReceiver, isDispatch, isSpread = isSpread)
     }
 }
 
@@ -143,7 +143,7 @@ private fun Candidate.resolveBlockArgument(
     context: ResolutionContext,
     isReceiver: Boolean,
     isDispatch: Boolean,
-    isVararg: Boolean = false
+    isSpread: Boolean = false
 ) {
     val returnArguments = block.returnExpressions()
     if (returnArguments.isEmpty()) {
@@ -157,7 +157,7 @@ private fun Candidate.resolveBlockArgument(
             isDispatch = false,
             sink = sink,
             context = context,
-            isVararg = isVararg
+            isSpread = isSpread
         )
         return
     }
@@ -170,7 +170,7 @@ private fun Candidate.resolveBlockArgument(
             context,
             isReceiver,
             isDispatch,
-            isVararg = isVararg
+            isSpread = isSpread
         )
     }
 }
@@ -184,7 +184,7 @@ fun Candidate.resolveSubCallArgument(
     isReceiver: Boolean,
     isDispatch: Boolean,
     useNullableArgumentType: Boolean = false,
-    isVararg: Boolean = false
+    isSpread: Boolean = false
 ) {
     require(argument is FirExpression)
     val candidate = argument.candidate() ?: return resolvePlainExpressionArgument(
@@ -196,7 +196,7 @@ fun Candidate.resolveSubCallArgument(
         isReceiver,
         isDispatch,
         useNullableArgumentType,
-        isVararg = isVararg
+        isSpread = isSpread
     )
     /*
      * It's important to extract type from argument neither from symbol, because of symbol contains
@@ -214,7 +214,7 @@ fun Candidate.resolveSubCallArgument(
         isReceiver,
         isDispatch,
         useNullableArgumentType,
-        isVararg = isVararg
+        isSpread = isSpread
     )
 }
 
@@ -247,7 +247,7 @@ fun Candidate.resolvePlainExpressionArgument(
     isReceiver: Boolean,
     isDispatch: Boolean,
     useNullableArgumentType: Boolean = false,
-    isVararg: Boolean = false
+    isSpread: Boolean = false
 ) {
 
     if (expectedType == null) return
@@ -266,7 +266,7 @@ fun Candidate.resolvePlainExpressionArgument(
         isReceiver,
         isDispatch,
         useNullableArgumentType,
-        isVararg = isVararg
+        isSpread = isSpread
     )
 }
 
@@ -280,7 +280,7 @@ fun Candidate.resolvePlainArgumentType(
     isReceiver: Boolean,
     isDispatch: Boolean,
     useNullableArgumentType: Boolean = false,
-    isVararg: Boolean = false
+    isSpread: Boolean = false
 ) {
     val position = if (isReceiver) ConeReceiverConstraintPosition(argument) else ConeArgumentConstraintPosition(argument)
 
@@ -305,7 +305,7 @@ fun Candidate.resolvePlainArgumentType(
     }
 
     checkApplicabilityForArgumentType(
-        csBuilder, argument, argumentTypeForApplicabilityCheck, expectedType, position, isReceiver, isDispatch, sink, context, isVararg = isVararg
+        csBuilder, argument, argumentTypeForApplicabilityCheck, expectedType, position, isReceiver, isDispatch, sink, context, isSpread = isSpread
     )
 }
 
@@ -354,16 +354,16 @@ private fun checkApplicabilityForArgumentType(
     isDispatch: Boolean,
     sink: CheckerSink,
     context: ResolutionContext,
-    isVararg: Boolean = false
+    isSpread: Boolean = false
 ) {
     if (expectedType == null) return
     var argumentType = captureFromTypeParameterUpperBoundIfNeeded(argumentTypeBeforeCapturing, expectedType, context.session)
 
-    if (isVararg)
+    if (isSpread)
         if (expectedType.isPrimitiveArray || !expectedType.isNonPrimitiveGenericArray)
             return
         argumentType = argumentType.arrayElementType()?.createOutArrayType(createPrimitiveArrayType = false) ?: argumentType
-    }
+
 
 
     fun subtypeError(actualExpectedType: ConeKotlinType): ResolutionDiagnostic {
