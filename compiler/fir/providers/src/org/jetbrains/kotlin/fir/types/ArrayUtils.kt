@@ -6,6 +6,7 @@
 package org.jetbrains.kotlin.fir.types
 
 import org.jetbrains.kotlin.name.StandardClassIds
+import org.jetbrains.kotlin.name.canBeSpreaded
 import org.jetbrains.kotlin.utils.addToStdlib.runIf
 
 val ConeKotlinType.isArrayOrPrimitiveArray: Boolean
@@ -46,7 +47,7 @@ private fun ConeKotlinType.arrayElementTypeArgument(checkUnsignedArrays: Boolean
     val type = this.lowerBoundIfFlexible()
     if (type !is ConeClassLikeType) return null
     val classId = type.lookupTag.classId
-    if (classId == StandardClassIds.Array) {
+    if (classId.canBeSpreaded()) {
         return type.typeArguments.first()
     }
     val elementType = StandardClassIds.elementTypeByPrimitiveArrayType[classId] ?: runIf(checkUnsignedArrays) {

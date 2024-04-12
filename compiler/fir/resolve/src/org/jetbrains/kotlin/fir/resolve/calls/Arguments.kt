@@ -357,8 +357,14 @@ private fun checkApplicabilityForArgumentType(
     isVararg: Boolean = false
 ) {
     if (expectedType == null) return
+    var argumentType = captureFromTypeParameterUpperBoundIfNeeded(argumentTypeBeforeCapturing, expectedType, context.session)
 
-    val argumentType = captureFromTypeParameterUpperBoundIfNeeded(argumentTypeBeforeCapturing, expectedType, context.session)
+    if (isVararg)
+        if (expectedType.isPrimitiveArray || !expectedType.isNonPrimitiveGenericArray)
+            return
+        argumentType = argumentType.arrayElementType()?.createOutArrayType(createPrimitiveArrayType = false) ?: argumentType
+    }
+
 
     fun subtypeError(actualExpectedType: ConeKotlinType): ResolutionDiagnostic {
         if (argument.isNullLiteral && actualExpectedType.nullability == ConeNullability.NOT_NULL) {
@@ -431,8 +437,6 @@ private fun checkApplicabilityForArgumentType(
         }
 
 
-        if (isVararg)
-            return
 
         if (!isReceiver) {
             sink.reportDiagnostic(subtypeError(expectedType))
@@ -471,7 +475,7 @@ internal fun Candidate.resolveArgument(
         context,
         isReceiver,
         false,
-        isVararg = parameter?.isVararg == true
+        isVararg = argument is FirSpreadArgumentExpression
     )
 }
 

@@ -51,6 +51,10 @@ val ConeKotlinType.isArrayTypeOrNullableArrayType: Boolean get() = isArrayType(i
 val ConeKotlinType.isNonPrimitiveArray: Boolean
     get() = this is ConeClassLikeType && lookupTag.classId == StandardClassIds.Array
 
+val ConeKotlinType.isNonPrimitiveGenericArray: Boolean
+    get() = this is ConeClassLikeType && lookupTag.classId == StandardClassIds.Array && typeArguments.size == 1
+
+
 val ConeKotlinType.isIntArray: Boolean
     get() = this is ConeClassLikeType && lookupTag.classId == StandardClassIds.primitiveArrayTypeByElementType[StandardClassIds.Int]
 
