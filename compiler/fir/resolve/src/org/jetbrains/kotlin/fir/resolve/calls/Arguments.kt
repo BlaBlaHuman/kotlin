@@ -359,11 +359,11 @@ private fun checkApplicabilityForArgumentType(
     if (expectedType == null) return
     var argumentType = captureFromTypeParameterUpperBoundIfNeeded(argumentTypeBeforeCapturing, expectedType, context.session)
 
-    if (isSpread)
+    if (isSpread) {
         if (expectedType.isPrimitiveArray || !expectedType.isNonPrimitiveGenericArray)
             return
         argumentType = argumentType.arrayElementType()?.createOutArrayType(createPrimitiveArrayType = false) ?: argumentType
-
+    }
 
 
     fun subtypeError(actualExpectedType: ConeKotlinType): ResolutionDiagnostic {
