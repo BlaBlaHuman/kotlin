@@ -6,7 +6,7 @@
 package kotlin.jvm.internal
 
 public abstract class PrimitiveSpreadBuilder<T : Any>(private val size: Int) {
-    abstract protected fun T.getSize(): Int
+    protected abstract fun T.getSize(): Int
 
     protected var position: Int = 0
 
@@ -19,7 +19,7 @@ public abstract class PrimitiveSpreadBuilder<T : Any>(private val size: Int) {
 
     protected fun size(): Int {
         var totalLength = 0
-        for (i in 0..size - 1) {
+        for (i in 0..<size) {
             totalLength += spreads[i]?.getSize() ?: 1
         }
         return totalLength
@@ -28,7 +28,7 @@ public abstract class PrimitiveSpreadBuilder<T : Any>(private val size: Int) {
     protected fun toArray(values: T, result: T): T {
         var dstIndex = 0
         var copyValuesFrom = 0
-        for (i in 0..size - 1) {
+        for (i in 0..<size) {
             val spreadArgument = spreads[i]
             if (spreadArgument != null) {
                 if (copyValuesFrom < i) {

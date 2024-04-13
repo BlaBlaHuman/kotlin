@@ -208,8 +208,8 @@ open class FirTypeResolveTransformer(
                     .transformAnnotations(this, data)
 
                 if (property.isFromVararg == true) {
-                    property.transformTypeToArrayType()
-                    property.backingField?.transformTypeToArrayType()
+                    property.transformTypeToUnderlyingType()
+                    property.backingField?.transformTypeToUnderlyingType()
                     setAccessorTypesByPropertyType(property)
                 }
 

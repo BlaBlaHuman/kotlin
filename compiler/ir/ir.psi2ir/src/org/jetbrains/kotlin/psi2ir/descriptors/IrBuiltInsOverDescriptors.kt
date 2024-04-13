@@ -523,6 +523,16 @@ class IrBuiltInsOverDescriptors(
                 it.descriptor.valueParameters.size == 1 && it.descriptor.valueParameters[0].varargElementType != null
     }
 
+    override val listOf = findFunctions(Name.identifier("listOf")).first {
+        it.descriptor.extensionReceiverParameter == null && it.descriptor.dispatchReceiverParameter == null &&
+                it.descriptor.valueParameters.size == 1 && it.descriptor.valueParameters[0].varargElementType != null
+    }
+
+    override val mutableListOf = findFunctions(Name.identifier("mutableListOf")).first {
+        it.descriptor.extensionReceiverParameter == null && it.descriptor.dispatchReceiverParameter == null &&
+                it.descriptor.valueParameters.size == 0
+    }
+
     override val arrayOfNulls = findFunctions(Name.identifier("arrayOfNulls")).first {
         it.descriptor.extensionReceiverParameter == null && it.descriptor.dispatchReceiverParameter == null &&
                 it.descriptor.valueParameters.size == 1 && KotlinBuiltIns.isInt(it.descriptor.valueParameters[0].type)

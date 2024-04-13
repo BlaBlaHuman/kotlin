@@ -112,6 +112,9 @@ open class BuiltinSymbolsBase(val irBuiltIns: IrBuiltIns, private val symbolTabl
     val arrayOf: IrSimpleFunctionSymbol get() = irBuiltIns.arrayOf
     val arrayOfNulls: IrSimpleFunctionSymbol get() = irBuiltIns.arrayOfNulls
 
+    val listOf: IrSimpleFunctionSymbol get() = irBuiltIns.listOf
+    val mutableListOf: IrSimpleFunctionSymbol get() = irBuiltIns.mutableListOf
+
     val array get() = irBuiltIns.arrayClass
 
     val byteArray get() = irBuiltIns.byteArray

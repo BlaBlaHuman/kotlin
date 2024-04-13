@@ -9,10 +9,7 @@ import org.jetbrains.kotlin.backend.common.FileLoweringPass
 import org.jetbrains.kotlin.backend.common.IrElementTransformerVoidWithContext
 import org.jetbrains.kotlin.backend.common.phaser.makeIrFilePhase
 import org.jetbrains.kotlin.backend.jvm.JvmBackendContext
-import org.jetbrains.kotlin.backend.jvm.ir.IrArrayBuilder
-import org.jetbrains.kotlin.backend.jvm.ir.createJvmIrBuilder
-import org.jetbrains.kotlin.backend.jvm.ir.irArray
-import org.jetbrains.kotlin.backend.jvm.ir.irArrayOf
+import org.jetbrains.kotlin.backend.jvm.ir.*
 import org.jetbrains.kotlin.builtins.PrimitiveType
 import org.jetbrains.kotlin.builtins.StandardNames
 import org.jetbrains.kotlin.builtins.UnsignedType
@@ -64,10 +61,11 @@ internal class VarargLowering(val context: JvmBackendContext) : FileLoweringPass
         return expression
     }
 
-    override fun visitVararg(expression: IrVararg): IrExpression =
-        createBuilder(expression.startOffset, expression.endOffset).irArray(expression.type) { addVararg(expression) }
+    override fun visitVararg(expression: IrVararg): IrExpression {
+        return createBuilder(expression.startOffset, expression.endOffset).irSpreadArray(expression.type) { addVararg(expression) }
+    }
 
-    private fun IrArrayBuilder.addVararg(expression: IrVararg) {
+    private fun IrSpreadBuilder.addVararg(expression: IrVararg) {
         loop@ for (element in expression.elements) {
             when (element) {
                 is IrExpression -> +element.transform(this@VarargLowering, null)

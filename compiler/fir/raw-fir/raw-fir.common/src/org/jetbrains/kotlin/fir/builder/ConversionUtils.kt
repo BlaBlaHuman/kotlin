@@ -715,6 +715,6 @@ fun FirErrorTypeRef.wrapIntoArray(): FirResolvedTypeRef {
     return buildResolvedTypeRef {
         source = typeRef.source
         type = StandardClassIds.Array.constructClassLikeType(arrayOf(ConeKotlinTypeProjectionOut(typeRef.coneType)))
-        delegatedTypeRef = typeRef.copyWithNewSourceKind(KtFakeSourceElementKind.ArrayTypeFromVarargParameter)
+        delegatedTypeRef = typeRef.copyWithNewSourceKind(KtFakeSourceElementKind.UnderlyingTypeFromVarargParameter)
     }
 }
