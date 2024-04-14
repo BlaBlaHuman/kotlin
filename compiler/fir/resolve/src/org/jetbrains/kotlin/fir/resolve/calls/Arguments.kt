@@ -475,7 +475,7 @@ internal fun Candidate.resolveArgument(
         context,
         isReceiver,
         false,
-        isVararg = argument is FirSpreadArgumentExpression
+        isSpread = argument is FirSpreadArgumentExpression
     )
 }
 
