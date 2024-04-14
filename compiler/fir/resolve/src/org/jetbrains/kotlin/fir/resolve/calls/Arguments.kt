@@ -360,9 +360,17 @@ private fun checkApplicabilityForArgumentType(
     var argumentType = captureFromTypeParameterUpperBoundIfNeeded(argumentTypeBeforeCapturing, expectedType, context.session)
 
     if (isSpread) {
-        if (expectedType.isPrimitiveArray || !expectedType.isNonPrimitiveGenericArray)
-            return
-        argumentType = argumentType.arrayElementType()?.createOutArrayType(createPrimitiveArrayType = false) ?: argumentType
+        argumentType = when {
+            expectedType.isPrimitiveArray && argumentType.arrayElementType()?.isPrimitive == true ->
+                argumentType.arrayElementType()?.createArrayType(
+                    createPrimitiveArrayTypeIfPossible = true
+                ) ?: argumentType
+            expectedType.isNonPrimitiveArray ->
+                argumentType.arrayElementType()?.createOutArrayType(
+                    createPrimitiveArrayType = false
+                ) ?: argumentType
+            else -> argumentType
+        }
     }
 
 
