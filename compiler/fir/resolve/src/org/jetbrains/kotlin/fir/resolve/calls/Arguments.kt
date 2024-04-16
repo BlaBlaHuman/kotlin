@@ -361,12 +361,12 @@ private fun checkApplicabilityForArgumentType(
 
     if (isSpread) {
         argumentType = when {
-            expectedType.isPrimitiveArray && argumentType.arrayElementType()?.isPrimitive == true ->
-                argumentType.arrayElementType()?.createArrayType(
+            expectedType.isPrimitiveArray && argumentType.spreadableCollectionElementType()?.isPrimitive == true ->
+                argumentType.spreadableCollectionElementType()?.createArrayType(
                     createPrimitiveArrayTypeIfPossible = true
                 ) ?: argumentType
             expectedType.isNonPrimitiveArray ->
-                argumentType.arrayElementType()?.createOutArrayType(
+                argumentType.spreadableCollectionElementType()?.createOutArrayType(
                     createPrimitiveArrayType = false
                 ) ?: argumentType
             else -> argumentType
