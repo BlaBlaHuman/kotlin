@@ -43,11 +43,28 @@ fun ConeKotlinType.arrayElementType(checkUnsignedArrays: Boolean = true): ConeKo
     }
 }
 
-private fun ConeKotlinType.arrayElementTypeArgument(checkUnsignedArrays: Boolean = true): ConeTypeProjection? {
+fun ConeKotlinType.spreadableCollectionElementType(checkUnsignedArrays: Boolean = true): ConeKotlinType? {
+    return when (val argument = spreadableCollectionElementTypeArgument(checkUnsignedArrays)) {
+        is ConeKotlinTypeProjection -> argument.type
+        else -> null
+    }
+}
+
+private fun ConeKotlinType.spreadableCollectionElementTypeArgument(checkUnsignedArrays: Boolean = true): ConeTypeProjection? {
     val type = this.lowerBoundIfFlexible()
     if (type !is ConeClassLikeType) return null
     val classId = type.lookupTag.classId
     if (classId.canBeSpreaded()) {
+        return type.typeArguments.first()
+    }
+    return arrayElementType(checkUnsignedArrays)
+}
+
+private fun ConeKotlinType.arrayElementTypeArgument(checkUnsignedArrays: Boolean = true): ConeTypeProjection? {
+    val type = this.lowerBoundIfFlexible()
+    if (type !is ConeClassLikeType) return null
+    val classId = type.lookupTag.classId
+    if (classId == StandardClassIds.Array) {
         return type.typeArguments.first()
     }
     val elementType = StandardClassIds.elementTypeByPrimitiveArrayType[classId] ?: runIf(checkUnsignedArrays) {
@@ -56,7 +73,6 @@ private fun ConeKotlinType.arrayElementTypeArgument(checkUnsignedArrays: Boolean
     if (elementType != null) {
         return elementType.constructClassLikeType(emptyArray(), isNullable = false)
     }
-
     return null
 }
 
