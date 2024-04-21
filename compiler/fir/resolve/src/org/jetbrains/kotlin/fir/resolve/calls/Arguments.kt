@@ -360,13 +360,16 @@ private fun checkApplicabilityForArgumentType(
     var argumentType = captureFromTypeParameterUpperBoundIfNeeded(argumentTypeBeforeCapturing, expectedType, context.session)
 
     if (isSpread) {
+        val argumentTypeElement = argumentType.spreadableCollectionElementType()
+
         argumentType = when {
-            expectedType.isPrimitiveArray && (argumentType.spreadableCollectionElementType() == expectedType.spreadableCollectionElementType()) ->
-                argumentType.spreadableCollectionElementType()?.createArrayType(
+            expectedType.isPrimitiveArray
+                    && (argumentTypeElement == expectedType.spreadableCollectionElementType()) ->
+                argumentTypeElement?.createArrayType(
                     createPrimitiveArrayTypeIfPossible = true
                 ) ?: argumentType
             expectedType.isNonPrimitiveArray ->
-                argumentType.spreadableCollectionElementType()?.createOutArrayType(
+                argumentTypeElement?.createOutArrayType(
                     createPrimitiveArrayType = false
                 ) ?: argumentType
             else -> argumentType
