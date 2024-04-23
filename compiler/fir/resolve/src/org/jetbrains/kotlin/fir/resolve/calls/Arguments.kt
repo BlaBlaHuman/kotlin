@@ -359,7 +359,7 @@ private fun checkApplicabilityForArgumentType(
     if (expectedType == null) return
     var argumentType = captureFromTypeParameterUpperBoundIfNeeded(argumentTypeBeforeCapturing, expectedType, context.session)
 
-    if (isSpread) {
+    if (isSpread && !argumentType.isNullable) {
         val argumentTypeElement = argumentType.spreadableCollectionElementType()
 
         argumentType = when {
@@ -486,7 +486,7 @@ internal fun Candidate.resolveArgument(
         context,
         isReceiver,
         false,
-        isSpread = argument is FirSpreadArgumentExpression
+        isSpread = argument is FirSpreadArgumentExpression && parameter?.isVararg == true
     )
 }
 
