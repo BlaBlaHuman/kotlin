@@ -35,7 +35,7 @@ internal fun FirCallableDeclaration.transformTypeToArrayType() {
     replaceReturnTypeRef(
         buildResolvedTypeRef {
             source = returnTypeRef.source
-            type = ConeKotlinTypeProjectionOut(returnType).createArrayType()
+            type = ConeKotlinTypeProjectionOut(returnType).createArrayType(createPrimitiveArrayTypeIfPossible = false)
             annotations += returnTypeRef.annotations
             // ? do we really need replacing source of nested delegatedTypeRef ?
             delegatedTypeRef = returnTypeRef.copyWithNewSourceKind(KtFakeSourceElementKind.ArrayTypeFromVarargParameter)

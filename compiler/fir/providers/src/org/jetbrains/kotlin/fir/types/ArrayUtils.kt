@@ -6,6 +6,7 @@
 package org.jetbrains.kotlin.fir.types
 
 import org.jetbrains.kotlin.name.StandardClassIds
+import org.jetbrains.kotlin.name.canBeSpreaded
 import org.jetbrains.kotlin.utils.addToStdlib.runIf
 
 val ConeKotlinType.isArrayOrPrimitiveArray: Boolean
@@ -42,6 +43,23 @@ fun ConeKotlinType.arrayElementType(checkUnsignedArrays: Boolean = true): ConeKo
     }
 }
 
+fun ConeKotlinType.spreadableCollectionElementType(checkUnsignedArrays: Boolean = true): ConeKotlinType? {
+    return when (val argument = spreadableCollectionElementTypeArgument(checkUnsignedArrays)) {
+        is ConeKotlinTypeProjection -> argument.type
+        else -> null
+    }
+}
+
+private fun ConeKotlinType.spreadableCollectionElementTypeArgument(checkUnsignedArrays: Boolean = true): ConeTypeProjection? {
+    val type = this.lowerBoundIfFlexible()
+    if (type !is ConeClassLikeType) return null
+    val classId = type.lookupTag.classId
+    if (classId.canBeSpreaded()) {
+        return type.typeArguments.first()
+    }
+    return arrayElementType(checkUnsignedArrays)
+}
+
 private fun ConeKotlinType.arrayElementTypeArgument(checkUnsignedArrays: Boolean = true): ConeTypeProjection? {
     val type = this.lowerBoundIfFlexible()
     if (type !is ConeClassLikeType) return null
@@ -55,7 +73,6 @@ private fun ConeKotlinType.arrayElementTypeArgument(checkUnsignedArrays: Boolean
     if (elementType != null) {
         return elementType.constructClassLikeType(emptyArray(), isNullable = false)
     }
-
     return null
 }
 

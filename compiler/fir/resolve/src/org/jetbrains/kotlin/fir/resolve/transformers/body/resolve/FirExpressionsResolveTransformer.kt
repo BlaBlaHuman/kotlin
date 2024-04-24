@@ -32,7 +32,7 @@ import org.jetbrains.kotlin.fir.resolve.*
 import org.jetbrains.kotlin.fir.resolve.calls.*
 import org.jetbrains.kotlin.fir.resolve.diagnostics.*
 import org.jetbrains.kotlin.fir.resolve.substitution.ConeSubstitutor
-import org.jetbrains.kotlin.fir.resolve.transformers.replaceLambdaArgumentInvocationKinds
+import org.jetbrains.kotlin.fir.resolve.transformers.*
 import org.jetbrains.kotlin.fir.scopes.impl.isWrappedIntegerOperator
 import org.jetbrains.kotlin.fir.scopes.impl.isWrappedIntegerOperatorForUnsignedType
 import org.jetbrains.kotlin.fir.symbols.impl.FirCallableSymbol
@@ -51,6 +51,99 @@ import org.jetbrains.kotlin.types.ConstantValueKind
 import org.jetbrains.kotlin.types.TypeApproximatorConfiguration
 import org.jetbrains.kotlin.util.OperatorNameConventions
 import org.jetbrains.kotlin.util.PrivateForInline
+
+
+enum class ToArrayCast {
+    NO_CAST,
+    TYPE_ARRAY_CAST,
+    INT_ARRAY_CAST,
+    LONG_ARRAY_CAST,
+    FLOAT_ARRAY_CAST,
+    DOUBLE_ARRAY_CAST,
+    BOOLEAN_ARRAY_CAST,
+    BYTE_ARRAY_CAST,
+    CHAR_ARRAY_CAST,
+    SHORT_ARRAY_CAST
+}
+
+fun ToArrayCast.getFunctionName(): String {
+    return when(this) {
+        ToArrayCast.TYPE_ARRAY_CAST -> "toTypedArray"
+        ToArrayCast.INT_ARRAY_CAST -> "toIntArray"
+        ToArrayCast.LONG_ARRAY_CAST -> "toLongArray"
+        ToArrayCast.FLOAT_ARRAY_CAST -> "toFloatArray"
+        ToArrayCast.DOUBLE_ARRAY_CAST -> "toDoubleArray"
+        ToArrayCast.BOOLEAN_ARRAY_CAST -> "toBooleanArray"
+        ToArrayCast.BYTE_ARRAY_CAST -> "toByteArray"
+        ToArrayCast.CHAR_ARRAY_CAST -> "toCharArray"
+        ToArrayCast.SHORT_ARRAY_CAST -> "toShortArray"
+        else -> throw IllegalArgumentException("No cast for $this")
+    }
+}
+class SpreadArgumentsCastTransformer(override val session: FirSession, private val transformer: FirAbstractBodyResolveTransformerDispatcher) :
+    FirAbstractPhaseTransformer<ToArrayCast?>(FirResolvePhase.BODY_RESOLVE) {
+
+    override fun transformSpreadArgumentExpression(
+        spreadArgumentExpression: FirSpreadArgumentExpression,
+        data: ToArrayCast?,
+    ): FirStatement {
+        if (data == null || data == ToArrayCast.NO_CAST) return spreadArgumentExpression
+
+        val function = buildFunctionCall {
+            this.explicitReceiver = spreadArgumentExpression.expression
+            this.extensionReceiver = spreadArgumentExpression.expression
+            this.calleeReference = buildSimpleNamedReference {
+                this.name = Name.identifier(data.getFunctionName())
+            }
+            this.origin = FirFunctionCallOrigin.Regular
+        }.transformSingle(transformer, ResolutionMode.ContextIndependent)
+
+
+        return buildSpreadArgumentExpression {
+            this.source = spreadArgumentExpression.source
+            this.annotations.addAll(spreadArgumentExpression.annotations)
+            this.expression = function
+        }
+    }
+
+    override fun transformVarargArgumentsExpression(
+        varargArgumentsExpression: FirVarargArgumentsExpression,
+        data: ToArrayCast?,
+    ): FirStatement {
+        return buildVarargArgumentsExpression {
+            source = varargArgumentsExpression.source
+            coneTypeOrNull = varargArgumentsExpression.resolvedType
+            annotations.addAll(varargArgumentsExpression.annotations)
+            coneElementTypeOrNull = varargArgumentsExpression.coneElementTypeOrNull
+            arguments.addAll(varargArgumentsExpression.arguments.map { firExpression ->
+                if (firExpression is FirSpreadArgumentExpression) {
+                    val expectedType = varargArgumentsExpression.resolvedType
+                    val neededCast = when {
+                        firExpression.resolvedType.isSubtypeOf(expectedType, session) -> ToArrayCast.NO_CAST
+                        expectedType.isNonPrimitiveArray -> ToArrayCast.TYPE_ARRAY_CAST
+                        expectedType.isIntArray -> ToArrayCast.INT_ARRAY_CAST
+                        expectedType.isLongArray -> ToArrayCast.LONG_ARRAY_CAST
+                        expectedType.isFloatArray -> ToArrayCast.FLOAT_ARRAY_CAST
+                        expectedType.isDoubleArray -> ToArrayCast.DOUBLE_ARRAY_CAST
+                        expectedType.isBooleanArray -> ToArrayCast.BOOLEAN_ARRAY_CAST
+                        expectedType.isByteArray -> ToArrayCast.BYTE_ARRAY_CAST
+                        expectedType.isCharArray -> ToArrayCast.CHAR_ARRAY_CAST
+                        expectedType.isShortArray -> ToArrayCast.SHORT_ARRAY_CAST
+                        else -> ToArrayCast.NO_CAST
+                    }
+                    firExpression.transform(this@SpreadArgumentsCastTransformer, neededCast)
+                } else {
+                    firExpression
+                }
+            })
+        }
+    }
+
+    override fun <E : FirElement> transformElement(element: E, data: ToArrayCast?): E {
+        return element
+    }
+}
+
 
 open class FirExpressionsResolveTransformer(transformer: FirAbstractBodyResolveTransformerDispatcher) :
     FirPartialBodyResolveTransformer(transformer) {
@@ -445,7 +538,10 @@ open class FirExpressionsResolveTransformer(transformer: FirAbstractBodyResolveT
                 dataFlowAnalyzer.exitFunctionCall(result, data.forceFullCompletion)
             }
 
-            addReceiversFromExtensions(result)
+            (result.argumentList as? FirResolvedArgumentList)?.transformArguments(
+                SpreadArgumentsCastTransformer(session, transformer),
+                null
+            )
 
             if (enableArrayOfCallTransformation) {
                 return arrayOfCallTransformer.transformFunctionCall(result, session)

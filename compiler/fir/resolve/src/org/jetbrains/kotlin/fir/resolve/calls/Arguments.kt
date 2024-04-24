@@ -46,7 +46,8 @@ fun Candidate.resolveArgumentExpression(
     sink: CheckerSink,
     context: ResolutionContext,
     isReceiver: Boolean,
-    isDispatch: Boolean
+    isDispatch: Boolean,
+    isSpread: Boolean = false,
 ) {
     when (argument) {
         is FirFunctionCall, is FirWhenExpression, is FirTryExpression, is FirCheckNotNullCall, is FirElvisExpression -> resolveSubCallArgument(
@@ -56,7 +57,8 @@ fun Candidate.resolveArgumentExpression(
             sink,
             context,
             isReceiver,
-            isDispatch
+            isDispatch,
+            isSpread = isSpread
         )
         // x?.bar() is desugared to `x SAFE-CALL-OPERATOR { $not-null-receiver$.bar() }`
         //
@@ -75,7 +77,8 @@ fun Candidate.resolveArgumentExpression(
                     context,
                     isReceiver,
                     isDispatch,
-                    useNullableArgumentType = true
+                    useNullableArgumentType = true,
+                    isSpread = isSpread
                 )
             } else {
                 // Assignment
@@ -88,7 +91,8 @@ fun Candidate.resolveArgumentExpression(
                     isReceiver = false,
                     isDispatch = false,
                     sink = sink,
-                    context = context
+                    context = context,
+                    isSpread = isSpread
                 )
             }
         }
@@ -101,7 +105,8 @@ fun Candidate.resolveArgumentExpression(
                     sink,
                     context,
                     isReceiver,
-                    isDispatch
+                    isDispatch,
+                    isSpread = isSpread
                 )
             else
                 preprocessCallableReference(argument, expectedType, context)
@@ -113,7 +118,8 @@ fun Candidate.resolveArgumentExpression(
             sink,
             context,
             isReceiver,
-            isDispatch
+            isDispatch,
+            isSpread = isSpread
         )
         is FirBlock -> resolveBlockArgument(
             csBuilder,
@@ -122,9 +128,10 @@ fun Candidate.resolveArgumentExpression(
             sink,
             context,
             isReceiver,
-            isDispatch
+            isDispatch,
+            isSpread =isSpread
         )
-        else -> resolvePlainExpressionArgument(csBuilder, argument, expectedType, sink, context, isReceiver, isDispatch)
+        else -> resolvePlainExpressionArgument(csBuilder, argument, expectedType, sink, context, isReceiver, isDispatch, isSpread = isSpread)
     }
 }
 
@@ -135,7 +142,8 @@ private fun Candidate.resolveBlockArgument(
     sink: CheckerSink,
     context: ResolutionContext,
     isReceiver: Boolean,
-    isDispatch: Boolean
+    isDispatch: Boolean,
+    isSpread: Boolean = false
 ) {
     val returnArguments = block.returnExpressions()
     if (returnArguments.isEmpty()) {
@@ -148,7 +156,8 @@ private fun Candidate.resolveBlockArgument(
             isReceiver = false,
             isDispatch = false,
             sink = sink,
-            context = context
+            context = context,
+            isSpread = isSpread
         )
         return
     }
@@ -160,7 +169,8 @@ private fun Candidate.resolveBlockArgument(
             sink,
             context,
             isReceiver,
-            isDispatch
+            isDispatch,
+            isSpread = isSpread
         )
     }
 }
@@ -173,7 +183,8 @@ fun Candidate.resolveSubCallArgument(
     context: ResolutionContext,
     isReceiver: Boolean,
     isDispatch: Boolean,
-    useNullableArgumentType: Boolean = false
+    useNullableArgumentType: Boolean = false,
+    isSpread: Boolean = false
 ) {
     require(argument is FirExpression)
     val candidate = argument.candidate() ?: return resolvePlainExpressionArgument(
@@ -184,7 +195,8 @@ fun Candidate.resolveSubCallArgument(
         context,
         isReceiver,
         isDispatch,
-        useNullableArgumentType
+        useNullableArgumentType,
+        isSpread = isSpread
     )
     /*
      * It's important to extract type from argument neither from symbol, because of symbol contains
@@ -201,7 +213,8 @@ fun Candidate.resolveSubCallArgument(
         context,
         isReceiver,
         isDispatch,
-        useNullableArgumentType
+        useNullableArgumentType,
+        isSpread = isSpread
     )
 }
 
@@ -233,7 +246,8 @@ fun Candidate.resolvePlainExpressionArgument(
     context: ResolutionContext,
     isReceiver: Boolean,
     isDispatch: Boolean,
-    useNullableArgumentType: Boolean = false
+    useNullableArgumentType: Boolean = false,
+    isSpread: Boolean = false
 ) {
 
     if (expectedType == null) return
@@ -251,7 +265,8 @@ fun Candidate.resolvePlainExpressionArgument(
         context,
         isReceiver,
         isDispatch,
-        useNullableArgumentType
+        useNullableArgumentType,
+        isSpread = isSpread
     )
 }
 
@@ -264,7 +279,8 @@ fun Candidate.resolvePlainArgumentType(
     context: ResolutionContext,
     isReceiver: Boolean,
     isDispatch: Boolean,
-    useNullableArgumentType: Boolean = false
+    useNullableArgumentType: Boolean = false,
+    isSpread: Boolean = false
 ) {
     val position = if (isReceiver) ConeReceiverConstraintPosition(argument) else ConeArgumentConstraintPosition(argument)
 
@@ -289,7 +305,7 @@ fun Candidate.resolvePlainArgumentType(
     }
 
     checkApplicabilityForArgumentType(
-        csBuilder, argument, argumentTypeForApplicabilityCheck, expectedType, position, isReceiver, isDispatch, sink, context
+        csBuilder, argument, argumentTypeForApplicabilityCheck, expectedType, position, isReceiver, isDispatch, sink, context, isSpread = isSpread
     )
 }
 
@@ -337,11 +353,29 @@ private fun checkApplicabilityForArgumentType(
     isReceiver: Boolean,
     isDispatch: Boolean,
     sink: CheckerSink,
-    context: ResolutionContext
+    context: ResolutionContext,
+    isSpread: Boolean = false
 ) {
     if (expectedType == null) return
+    var argumentType = captureFromTypeParameterUpperBoundIfNeeded(argumentTypeBeforeCapturing, expectedType, context.session)
 
-    val argumentType = captureFromTypeParameterUpperBoundIfNeeded(argumentTypeBeforeCapturing, expectedType, context.session)
+    if (isSpread && !argumentType.isNullable) {
+        val argumentTypeElement = argumentType.spreadableCollectionElementType()
+
+        argumentType = when {
+            expectedType.isPrimitiveArray
+                    && (argumentTypeElement == expectedType.spreadableCollectionElementType()) ->
+                argumentTypeElement?.createArrayType(
+                    createPrimitiveArrayTypeIfPossible = true
+                ) ?: argumentType
+            expectedType.isNonPrimitiveArray ->
+                argumentTypeElement?.createOutArrayType(
+                    createPrimitiveArrayType = false
+                ) ?: argumentType
+            else -> argumentType
+        }
+    }
+
 
     fun subtypeError(actualExpectedType: ConeKotlinType): ResolutionDiagnostic {
         if (argument.isNullLiteral && actualExpectedType.nullability == ConeNullability.NOT_NULL) {
@@ -413,6 +447,8 @@ private fun checkApplicabilityForArgumentType(
             }
         }
 
+
+
         if (!isReceiver) {
             sink.reportDiagnostic(subtypeError(expectedType))
             return
@@ -449,7 +485,8 @@ internal fun Candidate.resolveArgument(
         sink,
         context,
         isReceiver,
-        false
+        false,
+        isSpread = argument is FirSpreadArgumentExpression && parameter?.isVararg == true
     )
 }
 
