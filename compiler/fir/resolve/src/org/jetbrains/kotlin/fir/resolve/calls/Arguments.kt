@@ -348,7 +348,7 @@ private fun checkApplicabilityForArgumentType(
     csBuilder: ConstraintSystemBuilder,
     argument: FirExpression,
     argumentTypeBeforeCapturing: ConeKotlinType,
-    expectedType: ConeKotlinType?,
+    initialExpectedType: ConeKotlinType?,
     position: ConstraintPosition,
     isReceiver: Boolean,
     isDispatch: Boolean,
@@ -356,24 +356,15 @@ private fun checkApplicabilityForArgumentType(
     context: ResolutionContext,
     isSpread: Boolean = false
 ) {
-    if (expectedType == null) return
+    var expectedType = initialExpectedType ?: return
     var argumentType = captureFromTypeParameterUpperBoundIfNeeded(argumentTypeBeforeCapturing, expectedType, context.session)
 
     if (isSpread && !argumentType.isNullable) {
-        val argumentTypeElement = argumentType.spreadableCollectionElementType()
-
-        argumentType = when {
-            expectedType.isPrimitiveArray
-                    && (argumentTypeElement == expectedType.spreadableCollectionElementType()) ->
-                argumentTypeElement?.createArrayType(
-                    createPrimitiveArrayTypeIfPossible = true
-                ) ?: argumentType
-            expectedType.isNonPrimitiveArray ->
-                argumentTypeElement?.createOutArrayType(
-                    createPrimitiveArrayType = false
-                ) ?: argumentType
-            else -> argumentType
-        }
+        argumentType = argumentType.spreadableCollectionElementType()?.also {
+            expectedType =
+                expectedType.spreadableCollectionElementType()
+                    ?: error("Could not retrieve expected element type for vararg parameter. Parameter type is ${expectedType.renderReadable()}")
+        } ?: argumentType
     }
 
 
@@ -448,7 +439,6 @@ private fun checkApplicabilityForArgumentType(
         }
 
 
-
         if (!isReceiver) {
             sink.reportDiagnostic(subtypeError(expectedType))
             return
@@ -463,6 +453,7 @@ private fun checkApplicabilityForArgumentType(
             sink.reportDiagnostic(InapplicableWrongReceiver(expectedType, argumentType))
         }
     }
+
 }
 
 internal fun Candidate.resolveArgument(

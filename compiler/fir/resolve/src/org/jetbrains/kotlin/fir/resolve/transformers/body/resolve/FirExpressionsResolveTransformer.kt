@@ -116,8 +116,9 @@ class SpreadArgumentsCastTransformer(override val session: FirSession, private v
             annotations.addAll(varargArgumentsExpression.annotations)
             coneElementTypeOrNull = varargArgumentsExpression.coneElementTypeOrNull
             arguments.addAll(varargArgumentsExpression.arguments.map { firExpression ->
-                if (firExpression is FirSpreadArgumentExpression) {
+                if (firExpression is FirSpreadArgumentExpression && !firExpression.expression.resolvedType.hasError()) {
                     val expectedType = varargArgumentsExpression.resolvedType
+
                     val neededCast = when {
                         firExpression.resolvedType.isSubtypeOf(expectedType, session) -> ToArrayCast.NO_CAST
                         expectedType.isNonPrimitiveArray -> ToArrayCast.TYPE_ARRAY_CAST
