@@ -1,0 +1,228 @@
+~boolvararg~fun booleanVararg(vararg xs: Boolean) {}
+~charvararg~fun charVararg(vararg xs: Char) {}
+~bytevararg~fun byteVararg(vararg xs: Byte) {}
+~shortvararg~fun shortVararg(vararg xs: Short) {}
+~intvararg~fun intVararg(vararg xs: Int) {}
+~longvararg~fun longVararg(vararg xs: Long) {}
+~floatvararg~fun floatVararg(vararg xs: Float) {}
+~doublevararg~fun doubleVararg(vararg xs: Double) {}
+~anyvararg~fun anyVararg(vararg xs: Any?) {}
+~genericvararg~fun <T> genericVararg(vararg xs: T) {}
+~stringvararg~fun stringVararg(vararg xs: String) {}
+
+class A {}
+
+
+fun bar() {
+    val booleanList = listOf(true)
+    val booleanArray = booleanArrayOf(true)
+    val booleanSet = setOf(true)
+    
+    `boolvararg``boolvararg`booleanVararg()
+    `boolvararg``boolvararg`booleanVararg(true, false)
+    `boolvararg``boolvararg`booleanVararg(*listOf(true))
+    `boolvararg`booleanVararg(*booleanArrayOf(true))
+    `boolvararg`booleanVararg(*booleanList)
+    `boolvararg`booleanVararg(*booleanArray)
+    `boolvararg`booleanVararg(*booleanSet)
+    `boolvararg`booleanVararg(
+        *listOf(true, false),
+        *setOf(true, false),
+        *mutableSetOf(true, false),
+        *mutableListOf(true, false),
+        *booleanArrayOf(true, false),
+        *arrayOf(true, false)
+    )
+
+    val charList = listOf('a')
+    val charArray = charArrayOf('a')
+    val charSet = setOf('a')
+    `charvararg`charVararg()
+    `charvararg`charVararg('a', 'b')
+    `charvararg`charVararg(*listOf('a'))
+    `charvararg`charVararg(*charArrayOf('a'))
+    `charvararg`charVararg(*charList)
+    `charvararg`charVararg(*charArray)
+    `charvararg`charVararg(*charSet)
+    `charvararg`charVararg(
+        *listOf('a', 'b'),
+        *setOf('a', 'b'),
+        *mutableSetOf('a', 'b'),
+        *mutableListOf('a', 'b'),
+        *charArrayOf('a', 'b'),
+        *arrayOf('a', 'b')
+    )
+
+    val byteList = listOf(1.toByte())
+    val byteArray = byteArrayOf(1)
+    val byteSet = setOf(1.toByte())
+    `bytevararg`byteVararg()
+    `bytevararg`byteVararg(1.toByte())
+    `bytevararg`byteVararg(*listOf(1))
+    `bytevararg`byteVararg(*byteArrayOf(1))
+    `bytevararg`byteVararg(*byteList)
+    `bytevararg`byteVararg(*byteArray)
+    `bytevararg`byteVararg(*byteSet)
+    `bytevararg`byteVararg(
+        *listOf(1.toByte()),
+        *setOf(1),
+        *mutableSetOf(1),
+        *mutableListOf(1),
+        *byteArrayOf(1),
+        *arrayOf(1)
+    )
+
+    val shortList = listOf(1.toShort())
+    val shortArray = shortArrayOf(1)
+    val shortSet = setOf(1.toShort())
+    `shortvararg`shortVararg()
+    `shortvararg`shortVararg(1.toShort())
+    `shortvararg`shortVararg(*listOf(1))
+    `shortvararg`shortVararg(*shortArrayOf(1))
+    `shortvararg`shortVararg(*shortList)
+    `shortvararg`shortVararg(*shortArray)
+    `shortvararg`shortVararg(*shortSet)
+    `shortvararg`shortVararg(
+        *listOf(1.toShort()),
+        *setOf(1),
+        *mutableSetOf(1),
+        *mutableListOf(1),
+        *shortArrayOf(1),
+        *arrayOf(1)
+    )
+
+    val intList = listOf(1)
+    val intArray = intArrayOf(1)
+    val intSet = setOf(1)
+    `intvararg`intVararg()
+    `intvararg`intVararg(1, 2)
+    `intvararg`intVararg(*listOf(1))
+    `intvararg`intVararg(*intArrayOf(1))
+    `intvararg`intVararg(*intList)
+    `intvararg`intVararg(*intArray)
+    `intvararg`intVararg(*intSet)
+    `intvararg`intVararg(
+        *listOf(1),
+        *setOf(1),
+        *mutableSetOf(1),
+        *mutableListOf(1),
+        *intArrayOf(1),
+        *arrayOf(1)
+    )
+
+    val longList = listOf(1L)
+    val longArray = longArrayOf(1L)
+    val longSet = setOf(1L)
+    `longvararg`longVararg()
+    `longvararg`longVararg(1L)
+    `longvararg`longVararg(*listOf(1L))
+    `longvararg`longVararg(*longArrayOf(1L))
+    `longvararg`longVararg(*longList)
+    `longvararg`longVararg(*longArray)
+    `longvararg`longVararg(*longSet)
+    `longvararg`longVararg(
+        *listOf(1L),
+        *setOf(1L),
+        *mutableSetOf(1L),
+        *mutableListOf(1L),
+        *longArrayOf(1L),
+        *arrayOf(1L)
+    )
+
+    val floatList = listOf(1.0f)
+    val floatArray = floatArrayOf(1.0f)
+    val floatSet = setOf(1.0f)
+    `floatvararg`floatVararg()
+    `floatvararg`floatVararg(1.0f)
+    `floatvararg`floatVararg(*listOf(1.0f))
+    `floatvararg`floatVararg(*floatArrayOf(1.0f))
+    `floatvararg`floatVararg(*floatList)
+    `floatvararg`floatVararg(*floatArray)
+    `floatvararg`floatVararg(*floatSet)
+    `floatvararg`floatVararg(
+        *listOf(1.0f),
+        *setOf(1.0f),
+        *mutableSetOf(1.0f),
+        *mutableListOf(1.0f),
+        *floatArrayOf(1.0f),
+        *arrayOf(1.0f)
+    )
+
+    val doubleList = listOf(1.0)
+    val doubleArray = doubleArrayOf(1.0)
+    val doubleSet = setOf(1.0)
+    `doublevararg`doubleVararg()
+    `doublevararg`doubleVararg(1.0)
+    `doublevararg`doubleVararg(*listOf(1.0))
+    `doublevararg`doubleVararg(*doubleArrayOf(1.0))
+    `doublevararg`doubleVararg(*doubleList)
+    `doublevararg`doubleVararg(*doubleArray)
+    `doublevararg`doubleVararg(*doubleSet)
+    `doublevararg`doubleVararg(
+        *listOf(1.0),
+        *setOf(1.0),
+        *mutableSetOf(1.0),
+        *mutableListOf(1.0),
+        *doubleArrayOf(1.0),
+        *arrayOf(1.0)
+    )
+
+    `anyvararg`anyVararg()
+    `anyvararg`anyVararg('a', 5)
+    `anyvararg`anyVararg(*listOf('a'))
+    `anyvararg`anyVararg(*listOf(A()))
+    `anyvararg`anyVararg(*intList)
+    `anyvararg`anyVararg(*intArray)
+    `anyvararg`anyVararg(*intSet, *charSet, *byteArray)
+    `anyvararg`anyVararg(
+        *listOf('a'),
+        *setOf('a'),
+        *mutableSetOf('a'),
+        *mutableListOf('a'),
+        *arrayOf('a'),
+        *charArrayOf('a'),
+        *intArray,
+        *byteArray
+    )
+
+
+    `genericvararg`genericVararg(*listOf("a"))
+    `genericvararg`genericVararg(1, 'a', "a")
+    `genericvararg`genericVararg(
+        *intList
+    )
+    `genericvararg`genericVararg(
+        *intList,
+        *intSet,
+        *charSet,
+        *byteArray
+    )
+    `genericvararg`genericVararg(
+        *listOf(true),
+        *setOf(1L),
+        *mutableSetOf(1.0),
+        *mutableListOf("a"),
+        *arrayOf("a"),
+        *intArrayOf(1),
+        *arrayOf(A()),
+        *listOf(A())
+    )
+
+    val stringList = listOf("a")
+    val stringArray = arrayOf("a")
+    val stringSet = setOf("a")
+    `stringvararg`stringVararg()
+    `stringvararg`stringVararg("a", "b")
+    `stringvararg`stringVararg(*listOf("a"))
+    `stringvararg`stringVararg(*stringArray)
+    `stringvararg`stringVararg(*stringList)
+    `stringvararg`stringVararg(*stringSet)
+    `stringvararg`stringVararg(
+        *listOf("a", "b"),
+        *setOf("a", "b"),
+        *mutableSetOf("a", "b"),
+        *mutableListOf("a", "b"),
+        *arrayOf("a", "b"),
+        *stringArray
+    )
+}
