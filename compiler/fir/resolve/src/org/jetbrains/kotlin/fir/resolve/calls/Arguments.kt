@@ -362,8 +362,11 @@ private fun checkApplicabilityForArgumentType(
     if (isSpread && !argumentType.isNullable) {
         argumentType = argumentType.spreadableCollectionElementType()?.also {
             expectedType =
-                expectedType.spreadableCollectionElementType()
-                    ?: error("Could not retrieve expected element type for vararg parameter. Parameter type is ${expectedType.renderReadable()}")
+                expectedType.arrayElementType()
+                    ?: error(
+                        "Could not retrieve expected element type for vararg parameter."
+                                + " Parameter type is ${expectedType.renderReadable()}"
+                    )
         } ?: argumentType
     }
 
