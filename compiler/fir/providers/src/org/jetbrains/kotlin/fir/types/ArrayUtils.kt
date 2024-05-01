@@ -6,6 +6,7 @@
 package org.jetbrains.kotlin.fir.types
 
 import org.jetbrains.kotlin.name.StandardClassIds
+import org.jetbrains.kotlin.name.canBeSpreaded
 import org.jetbrains.kotlin.utils.addToStdlib.runIf
 
 val ConeKotlinType.isArrayOrPrimitiveArray: Boolean
@@ -17,6 +18,10 @@ fun ConeKotlinType.isArrayOrPrimitiveArray(checkUnsignedArrays: Boolean): Boolea
 
 fun ConeKotlinType.createOutArrayType(nullable: Boolean = false, createPrimitiveArrayType: Boolean = true): ConeKotlinType {
     return ConeKotlinTypeProjectionOut(this).createArrayType(nullable, createPrimitiveArrayType)
+}
+
+fun ConeTypeProjection.createVarargUnderlyingType(): ConeClassLikeType {
+    return StandardClassIds.ArrayList.constructClassLikeType(arrayOf(this))
 }
 
 fun ConeTypeProjection.createArrayType(nullable: Boolean = false, createPrimitiveArrayTypeIfPossible: Boolean = true): ConeClassLikeType {
@@ -34,6 +39,24 @@ fun ConeTypeProjection.createArrayType(nullable: Boolean = false, createPrimitiv
 
     return StandardClassIds.Array.constructClassLikeType(arrayOf(this), nullable)
 }
+
+fun ConeKotlinType.spreadableCollectionElementType(checkUnsignedArrays: Boolean = true): ConeKotlinType? {
+    return when (val argument = spreadableCollectionElementTypeArgument(checkUnsignedArrays)) {
+        is ConeKotlinTypeProjection -> argument.type
+        else -> null
+    }
+}
+
+private fun ConeKotlinType.spreadableCollectionElementTypeArgument(checkUnsignedArrays: Boolean = true): ConeTypeProjection? {
+    val type = this.lowerBoundIfFlexible()
+    if (type !is ConeClassLikeType) return null
+    val classId = type.lookupTag.classId
+    if (classId.canBeSpreaded()) {
+        return type.typeArguments.first()
+    }
+    return arrayElementType(checkUnsignedArrays)
+}
+
 
 fun ConeKotlinType.arrayElementType(checkUnsignedArrays: Boolean = true): ConeKotlinType? {
     return when (val argument = arrayElementTypeArgument(checkUnsignedArrays)) {

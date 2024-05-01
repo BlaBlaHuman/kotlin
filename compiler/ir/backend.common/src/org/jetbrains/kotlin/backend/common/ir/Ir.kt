@@ -153,6 +153,8 @@ open class BuiltinSymbolsBase(val irBuiltIns: IrBuiltIns, private val symbolTabl
     val mutableIterable get() = irBuiltIns.mutableIterableClass
     val mutableIterator get() = irBuiltIns.mutableIteratorClass
     val mutableListIterator get() = irBuiltIns.mutableListIteratorClass
+    
+    val arrayList get() = irBuiltIns.arrayListClass
     val comparable get() = irBuiltIns.comparableClass
 
     private val binaryOperatorCache = mutableMapOf<Triple<Name, IrType, IrType>, IrSimpleFunctionSymbol>()

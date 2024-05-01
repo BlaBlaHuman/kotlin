@@ -9,10 +9,7 @@ import org.jetbrains.kotlin.backend.common.FileLoweringPass
 import org.jetbrains.kotlin.backend.common.IrElementTransformerVoidWithContext
 import org.jetbrains.kotlin.backend.common.phaser.makeIrFilePhase
 import org.jetbrains.kotlin.backend.jvm.JvmBackendContext
-import org.jetbrains.kotlin.backend.jvm.ir.IrArrayBuilder
-import org.jetbrains.kotlin.backend.jvm.ir.createJvmIrBuilder
-import org.jetbrains.kotlin.backend.jvm.ir.irArray
-import org.jetbrains.kotlin.backend.jvm.ir.irArrayOf
+import org.jetbrains.kotlin.backend.jvm.ir.*
 import org.jetbrains.kotlin.builtins.PrimitiveType
 import org.jetbrains.kotlin.builtins.StandardNames
 import org.jetbrains.kotlin.builtins.UnsignedType
@@ -57,7 +54,7 @@ internal class VarargLowering(val context: JvmBackendContext) : FileLoweringPass
             if (parameter.varargElementType != null && !parameter.hasDefaultValue()) {
                 // Compute the correct type for the array argument.
                 val arrayType = parameter.type.substitute(expression.typeSubstitutionMap).makeNotNull()
-                expression.putValueArgument(i, createBuilder().irArrayOf(arrayType))
+                expression.putValueArgument(i, createBuilder().irVarargOf(arrayType))
             }
         }
 
@@ -65,9 +62,9 @@ internal class VarargLowering(val context: JvmBackendContext) : FileLoweringPass
     }
 
     override fun visitVararg(expression: IrVararg): IrExpression =
-        createBuilder(expression.startOffset, expression.endOffset).irArray(expression.type) { addVararg(expression) }
+        createBuilder(expression.startOffset, expression.endOffset).irVararg(expression.type) { addVararg(expression) }
 
-    private fun IrArrayBuilder.addVararg(expression: IrVararg) {
+    private fun IrVarargBuilder.addVararg(expression: IrVararg) {
         loop@ for (element in expression.elements) {
             when (element) {
                 is IrExpression -> +element.transform(this@VarargLowering, null)
@@ -94,7 +91,7 @@ internal class VarargLowering(val context: JvmBackendContext) : FileLoweringPass
 }
 
 internal val PRIMITIVE_ARRAY_OF_NAMES: Set<String> =
-    (PrimitiveType.values().map { type -> type.name } + UnsignedType.values().map { type -> type.typeName.asString() })
+    (PrimitiveType.entries.map { type -> type.name } + UnsignedType.entries.map { type -> type.typeName.asString() })
         .map { name -> name.toLowerCaseAsciiOnly() + "ArrayOf" }.toSet()
 
 internal const val ARRAY_OF_NAME = "arrayOf"
