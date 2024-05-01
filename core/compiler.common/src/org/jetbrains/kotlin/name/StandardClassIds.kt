@@ -122,6 +122,7 @@ object StandardClassIds {
     val ListIterator = "ListIterator".collectionsId()
     val Set = "Set".collectionsId()
     val Map = "Map".collectionsId()
+    val ArrayList = "ArrayList".collectionsId()
     val MutableIterator = "MutableIterator".collectionsId()
     val CharIterator = "CharIterator".collectionsId()
 
@@ -261,6 +262,16 @@ private fun String.coroutinesId() = ClassId(StandardClassIds.BASE_COROUTINES_PAC
 private fun String.enumsId() = ClassId(StandardClassIds.BASE_ENUMS_PACKAGE, Name.identifier(this))
 private fun String.concurrentId() = ClassId(StandardClassIds.BASE_CONCURRENT_PACKAGE, Name.identifier(this))
 
+fun ClassId.canBeSpreaded() = listOf(
+    StandardClassIds.Array,
+    StandardClassIds.Collection,
+    StandardClassIds.MutableCollection,
+    StandardClassIds.List,
+    StandardClassIds.MutableList,
+    StandardClassIds.Set,
+    StandardClassIds.MutableSet,
+    StandardClassIds.ArrayList
+).contains(this)
 private fun String.testId() = ClassId(StandardClassIds.BASE_TEST_PACKAGE, Name.identifier(this))
 
 private fun String.callableId(packageName: FqName) = CallableId(packageName, Name.identifier(this))

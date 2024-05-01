@@ -79,7 +79,7 @@ internal object FirReferenceResolveHelper {
     }
 
     private fun FirResolvedTypeRef.getDeclaredType() =
-        if (this.delegatedTypeRef?.source?.kind == KtFakeSourceElementKind.ArrayTypeFromVarargParameter) type.arrayElementType()
+        if (this.delegatedTypeRef?.source?.kind == KtFakeSourceElementKind.CollectionTypeFromVarargParameter) type.spreadableCollectionElementType()
         else type
 
     private fun ClassId.toTargetPsi(

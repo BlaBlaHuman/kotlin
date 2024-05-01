@@ -367,6 +367,7 @@ class IrBuiltInsOverDescriptors(
     override val comparableClass = builtIns.comparable.toIrSymbol()
 
     override val arrayClass = builtIns.array.toIrSymbol()
+    override val arrayListClass = builtIns.arrayList.toIrSymbol()
 
     override val throwableType = builtIns.throwable.defaultType.toIrType()
     override val throwableClass = builtIns.throwable.toIrSymbol()

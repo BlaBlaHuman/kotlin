@@ -171,6 +171,7 @@ class IrBuiltInsOverFir(
     override val setClass: IrClassSymbol by lazy { loadClass(StandardClassIds.Set) }
     override val listClass: IrClassSymbol by lazy { loadClass(StandardClassIds.List) }
     override val mapClass: IrClassSymbol by lazy { loadClass(StandardClassIds.Map) }
+    override val arrayListClass: IrClassSymbol by lazy { loadClass(StandardClassIds.ArrayList) }
     override val mapEntryClass: IrClassSymbol by lazy { loadClass(StandardClassIds.MapEntry) }
 
     override val iterableClass: IrClassSymbol by lazy { loadClass(StandardClassIds.Iterable) }

@@ -40,7 +40,7 @@ import org.jetbrains.kotlin.fir.resolve.substitution.ChainedSubstitutor
 import org.jetbrains.kotlin.fir.resolve.substitution.ConeSubstitutor
 import org.jetbrains.kotlin.fir.resolve.transformers.FirStatusResolver
 import org.jetbrains.kotlin.fir.resolve.transformers.contracts.runContractResolveForFunction
-import org.jetbrains.kotlin.fir.resolve.transformers.transformVarargTypeToArrayType
+import org.jetbrains.kotlin.fir.resolve.transformers.transformVarargTypeToUnderlyingType
 import org.jetbrains.kotlin.fir.symbols.impl.FirValueParameterSymbol
 import org.jetbrains.kotlin.fir.types.*
 import org.jetbrains.kotlin.fir.types.builder.buildErrorTypeRef
@@ -93,7 +93,7 @@ open class FirDeclarationsResolveTransformer(
         if (callableMember is FirFunction) {
             callableMember.valueParameters.forEach {
                 it.transformReturnTypeRef(transformer, ResolutionMode.ContextIndependent)
-                it.transformVarargTypeToArrayType()
+                it.transformVarargTypeToUnderlyingType()
             }
         }
     }
