@@ -51,30 +51,6 @@ val ConeKotlinType.isArrayTypeOrNullableArrayType: Boolean get() = isArrayType(i
 val ConeKotlinType.isNonPrimitiveArray: Boolean
     get() = this is ConeClassLikeType && lookupTag.classId == StandardClassIds.Array
 
-val ConeKotlinType.isIntArray: Boolean
-    get() = this is ConeClassLikeType && lookupTag.classId == StandardClassIds.primitiveArrayTypeByElementType[StandardClassIds.Int]
-
-val ConeKotlinType.isLongArray: Boolean
-    get() = this is ConeClassLikeType && lookupTag.classId == StandardClassIds.primitiveArrayTypeByElementType[StandardClassIds.Long]
-
-val ConeKotlinType.isFloatArray: Boolean
-    get() = this is ConeClassLikeType && lookupTag.classId == StandardClassIds.primitiveArrayTypeByElementType[StandardClassIds.Float]
-
-val ConeKotlinType.isDoubleArray: Boolean
-    get() = this is ConeClassLikeType && lookupTag.classId == StandardClassIds.primitiveArrayTypeByElementType[StandardClassIds.Double]
-
-val ConeKotlinType.isCharArray: Boolean
-    get() = this is ConeClassLikeType && lookupTag.classId == StandardClassIds.primitiveArrayTypeByElementType[StandardClassIds.Char]
-
-val ConeKotlinType.isByteArray: Boolean
-    get() = this is ConeClassLikeType && lookupTag.classId == StandardClassIds.primitiveArrayTypeByElementType[StandardClassIds.Byte]
-
-val ConeKotlinType.isBooleanArray: Boolean
-    get() = this is ConeClassLikeType && lookupTag.classId == StandardClassIds.primitiveArrayTypeByElementType[StandardClassIds.Boolean]
-
-val ConeKotlinType.isShortArray: Boolean
-    get() = this is ConeClassLikeType && lookupTag.classId == StandardClassIds.primitiveArrayTypeByElementType[StandardClassIds.Short]
-
 val ConeKotlinType.isPrimitiveArray: Boolean
     get() = this is ConeClassLikeType && lookupTag.classId in StandardClassIds.primitiveArrayTypeByElementType.values
 
