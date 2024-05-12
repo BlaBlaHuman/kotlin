@@ -263,6 +263,7 @@ private fun String.concurrentId() = ClassId(StandardClassIds.BASE_CONCURRENT_PAC
 
 fun ClassId.canBeSpreaded() = listOf(
     StandardClassIds.Array,
+    StandardClassIds.Iterable,
     StandardClassIds.Collection,
     StandardClassIds.MutableCollection,
     StandardClassIds.List,

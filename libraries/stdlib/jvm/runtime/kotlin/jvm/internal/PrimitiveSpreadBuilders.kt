@@ -30,6 +30,9 @@ public abstract class PrimitiveSpreadBuilder<T : Any>(private val size: Int) {
             is Collection<*> -> {
                 element.size
             }
+            is Iterable<*> -> {
+                element.count()
+            }
             is Array<*> -> {
                 element.size
             }
@@ -58,7 +61,7 @@ public abstract class PrimitiveSpreadBuilder<T : Any>(private val size: Int) {
                 element.size
             }
             else -> {
-                throw AssertionError()
+                throw AssertionError("")
             }
         }
     }
