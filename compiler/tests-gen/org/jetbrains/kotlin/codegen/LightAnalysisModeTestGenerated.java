@@ -43880,6 +43880,16 @@ public class LightAnalysisModeTestGenerated extends AbstractLightAnalysisModeTes
             runTest("compiler/testData/codegen/box/vararg/spreadCopiesArray.kt");
         }
 
+        @TestMetadata("spreadOperatorOnNonArrayTypes.kt")
+        public void testSpreadOperatorOnNonArrayTypes() throws Exception {
+            runTest("compiler/testData/codegen/box/vararg/spreadOperatorOnNonArrayTypes.kt");
+        }
+
+        @TestMetadata("spreadOperatorOnNullableNonArrayType.kt")
+        public void testSpreadOperatorOnNullableNonArrayType() throws Exception {
+            runTest("compiler/testData/codegen/box/vararg/spreadOperatorOnNullableNonArrayType.kt");
+        }
+
         @TestMetadata("useSuspendFunResultAsVararg.kt")
         public void testUseSuspendFunResultAsVararg() throws Exception {
             runTest("compiler/testData/codegen/box/vararg/useSuspendFunResultAsVararg.kt");

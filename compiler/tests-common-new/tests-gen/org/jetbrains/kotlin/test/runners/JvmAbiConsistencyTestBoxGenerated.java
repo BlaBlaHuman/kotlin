@@ -54158,6 +54158,18 @@ public class JvmAbiConsistencyTestBoxGenerated extends AbstractJvmAbiConsistency
         }
 
         @Test
+        @TestMetadata("spreadOperatorOnNonArrayTypes.kt")
+        public void testSpreadOperatorOnNonArrayTypes() throws Exception {
+            runTest("compiler/testData/codegen/box/vararg/spreadOperatorOnNonArrayTypes.kt");
+        }
+
+        @Test
+        @TestMetadata("spreadOperatorOnNullableNonArrayType.kt")
+        public void testSpreadOperatorOnNullableNonArrayType() throws Exception {
+            runTest("compiler/testData/codegen/box/vararg/spreadOperatorOnNullableNonArrayType.kt");
+        }
+
+        @Test
         @TestMetadata("useSuspendFunResultAsVararg.kt")
         public void testUseSuspendFunResultAsVararg() throws Exception {
             runTest("compiler/testData/codegen/box/vararg/useSuspendFunResultAsVararg.kt");
