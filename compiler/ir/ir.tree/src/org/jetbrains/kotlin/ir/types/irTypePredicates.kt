@@ -12,9 +12,7 @@ import org.jetbrains.kotlin.ir.declarations.IrClass
 import org.jetbrains.kotlin.ir.declarations.IrPackageFragment
 import org.jetbrains.kotlin.ir.symbols.IrClassSymbol
 import org.jetbrains.kotlin.ir.symbols.IrClassifierSymbol
-import org.jetbrains.kotlin.ir.util.IdSignature
-import org.jetbrains.kotlin.ir.util.hasEqualFqName
-import org.jetbrains.kotlin.ir.util.hasTopLevelEqualFqName
+import org.jetbrains.kotlin.ir.util.*
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.FqNameUnsafe
 import org.jetbrains.kotlin.name.Name
@@ -126,6 +124,14 @@ fun IrType.isNullableArray(): Boolean = isNullableClassType(IdSignatureValues.ar
 fun IrType.isCollection(): Boolean = isNotNullClassType(IdSignatureValues.collection)
 fun IrType.isNothing(): Boolean = isNotNullClassType(IdSignatureValues.nothing)
 fun IrType.isNullableNothing(): Boolean = isNullableClassType(IdSignatureValues.nothing)
+
+fun IrType.isSpreadable(): Boolean {
+    if (this.isArray() || this.isPrimitiveArray() || this.isUnsignedArray())
+        return true
+
+    val currentClass = this.getClass() ?: return false
+    return getAllSubstitutedSupertypes(currentClass).any { it.isIterable() }
+}
 
 fun IrType.isPrimitiveType(nullable: Boolean = false): Boolean =
     nullable == this.isMarkedNullable() && getPrimitiveType() != null

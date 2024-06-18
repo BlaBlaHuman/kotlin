@@ -46,56 +46,72 @@ public class SpreadBuilder {
             int[] array = (int[]) container;
             if (array.length > 0) {
                 list.ensureCapacity(list.size() + array.length);
-                Collections.addAll(list, array);
+                for (Integer j : array) {
+                    list.add(j);
+                }
             }
         }
         else if (container instanceof long[]) {
             long[] array = (long[]) container;
             if (array.length > 0) {
                 list.ensureCapacity(list.size() + array.length);
-                Collections.addAll(list, array);
+                for (Long j : array) {
+                    list.add(j);
+                }
             }
         }
         else if (container instanceof double[]) {
             double[] array = (double[]) container;
             if (array.length > 0) {
                 list.ensureCapacity(list.size() + array.length);
-                Collections.addAll(list, array);
+                for (Double j : array) {
+                    list.add(j);
+                }
             }
         }
         else if (container instanceof float[]) {
             float[] array = (float[]) container;
             if (array.length > 0) {
                 list.ensureCapacity(list.size() + array.length);
-                Collections.addAll(list, array);
+                for (Float j : array) {
+                    list.add(j);
+                }
             }
         }
         else if (container instanceof short[]) {
             short[] array = (short[]) container;
             if (array.length > 0) {
                 list.ensureCapacity(list.size() + array.length);
-                Collections.addAll(list, array);
+                for (Short j : array) {
+                    list.add(j);
+                }
             }
         }
         else if (container instanceof byte[]) {
             byte[] array = (byte[]) container;
             if (array.length > 0) {
                 list.ensureCapacity(list.size() + array.length);
-                Collections.addAll(list, array);
+                for (Byte j : array) {
+                    list.add(j);
+                }
             }
         }
         else if (container instanceof char[]) {
             char[] array = (char[]) container;
             if (array.length > 0) {
                 list.ensureCapacity(list.size() + array.length);
-                Collections.addAll(list, array);
+                for (Character j : array) {
+                    list.add(j);
+                }
             }
         }
         else if (container instanceof boolean[]) {
             boolean[] array = (boolean[]) container;
             if (array.length > 0) {
                 list.ensureCapacity(list.size() + array.length);
-                Collections.addAll(list, array);
+                for (Boolean j : array) {
+                    list.add(j);
+                }
             }
         }
         else {

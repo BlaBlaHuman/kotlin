@@ -7,6 +7,7 @@ package org.jetbrains.kotlin.fir.types
 
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.StandardClassIds
+import org.jetbrains.kotlin.name.canBeSpread
 
 val ConeKotlinType.isByte: Boolean get() = isBuiltinType(StandardClassIds.Byte, false)
 val ConeKotlinType.isShort: Boolean get() = isBuiltinType(StandardClassIds.Short, false)
@@ -43,6 +44,14 @@ val ConeKotlinType.isPrimitiveOrNullablePrimitive: Boolean get() = isAnyOfBuilti
 val ConeKotlinType.isPrimitive: Boolean get() = isPrimitiveOrNullablePrimitive && nullability == ConeNullability.NOT_NULL
 val ConeKotlinType.isPrimitiveNumberOrNullableType: Boolean
     get() = isPrimitiveOrNullablePrimitive && !isBooleanOrNullableBoolean && !isCharOrNullableChar
+
+val ConeKotlinType.isSpreadable: Boolean
+    get() {
+        val type = this.lowerBoundIfFlexible()
+        if (type !is ConeClassLikeType) return false
+        val classId = type.lookupTag.classId
+        return classId.canBeSpread()
+    }
 
 val ConeKotlinType.isArrayType: Boolean get() = isArrayType(isNullable = false)
 val ConeKotlinType.isArrayTypeOrNullableArrayType: Boolean get() = isArrayType(isNullable = null)

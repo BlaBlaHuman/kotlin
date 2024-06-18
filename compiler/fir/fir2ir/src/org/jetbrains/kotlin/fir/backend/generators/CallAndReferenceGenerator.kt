@@ -1109,7 +1109,7 @@ class CallAndReferenceGenerator(
             if (argument.arguments[0] is FirNamedArgumentExpression &&
                 // IrVarargElement can be either IrSpreadElement (then nothing to do) or IrExpression
                 irVarargElement is IrExpression &&
-                (irVarargElement.type.isArray() || irVarargElement.type.isPrimitiveArray() || irVarargElement.type.isUnsignedArray())
+                (irVarargElement.type.isSpreadable())
             ) {
                 elements[0] = IrSpreadElementImpl(irVarargElement.startOffset, irVarargElement.endOffset, irVarargElement)
             }

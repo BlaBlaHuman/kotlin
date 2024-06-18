@@ -48,7 +48,7 @@ object FirNamedVarargChecker : FirCallChecker() {
             if (type is ConeErrorType) return
             if (argument.expression is FirArrayLiteral) return
 
-            if (allowAssignArray && type.isArrayType) return
+            if (allowAssignArray && type.isSpreadable) return
 
             if (isAnnotation) {
                 reporter.reportOn(

@@ -261,7 +261,7 @@ private fun String.coroutinesId() = ClassId(StandardClassIds.BASE_COROUTINES_PAC
 private fun String.enumsId() = ClassId(StandardClassIds.BASE_ENUMS_PACKAGE, Name.identifier(this))
 private fun String.concurrentId() = ClassId(StandardClassIds.BASE_CONCURRENT_PACKAGE, Name.identifier(this))
 
-fun ClassId.canBeSpreaded() = listOf(
+fun ClassId.canBeSpread() = (listOf(
     StandardClassIds.Array,
     StandardClassIds.Iterable,
     StandardClassIds.Collection,
@@ -270,7 +270,7 @@ fun ClassId.canBeSpreaded() = listOf(
     StandardClassIds.MutableList,
     StandardClassIds.Set,
     StandardClassIds.MutableSet,
-).contains(this)
+) + StandardClassIds.elementTypeByPrimitiveArrayType.map { it.key }).contains(this)
 
 
 private fun String.testId() = ClassId(StandardClassIds.BASE_TEST_PACKAGE, Name.identifier(this))
