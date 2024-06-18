@@ -69,6 +69,10 @@ fun box(): String {
     booleanVararg(*booleanList)
     booleanVararg(*booleanArray)
     booleanVararg(*booleanSet)
+    booleanVararg(xs = booleanArray)
+    booleanVararg(xs = booleanList)
+    booleanVararg(xs = booleanArrayOf(true))
+    booleanVararg(xs = listOf(true))
     booleanVararg(
         *listOf(true, false),
         *setOf(true, false),
@@ -88,6 +92,10 @@ fun box(): String {
     charVararg(*charList)
     charVararg(*charArray)
     charVararg(*charSet)
+    charVararg(xs = charArray)
+    charVararg(xs = charList)
+    charVararg(xs = charArrayOf('a'))
+    charVararg(xs = listOf('a'))
     charVararg(
         *listOf('a', 'b'),
         *setOf('a', 'b'),
@@ -107,6 +115,10 @@ fun box(): String {
     byteVararg(*byteList)
     byteVararg(*byteArray)
     byteVararg(*byteSet)
+    byteVararg(xs = byteArray)
+    byteVararg(xs = byteList)
+    byteVararg(xs = byteArrayOf(1))
+    byteVararg(xs = listOf(1.toByte()))
     byteVararg(
         *listOf(1.toByte()),
         *setOf(1),
@@ -126,6 +138,10 @@ fun box(): String {
     shortVararg(*shortList)
     shortVararg(*shortArray)
     shortVararg(*shortSet)
+    shortVararg(xs = shortArray)
+    shortVararg(xs = shortList)
+    shortVararg(xs = shortArrayOf(1))
+    shortVararg(xs = listOf(1.toShort()))
     shortVararg(
         *listOf(1.toShort()),
         *setOf(1),
@@ -145,6 +161,10 @@ fun box(): String {
     intVararg(*intList)
     intVararg(*intArray)
     intVararg(*intSet)
+    intVararg(xs = intArray)
+    intVararg(xs = intList)
+    intVararg(xs = intArrayOf(1))
+    intVararg(xs = listOf(1))
     intVararg(
         *listOf(1),
         *setOf(1),
@@ -164,6 +184,10 @@ fun box(): String {
     longVararg(*longList)
     longVararg(*longArray)
     longVararg(*longSet)
+    longVararg(xs = longArray)
+    longVararg(xs = longList)
+    longVararg(xs = longArrayOf(1L))
+    longVararg(xs = listOf(1L))
     longVararg(
         *listOf(1L),
         *setOf(1L),
@@ -183,6 +207,10 @@ fun box(): String {
     floatVararg(*floatList)
     floatVararg(*floatArray)
     floatVararg(*floatSet)
+    floatVararg(xs = floatArray)
+    floatVararg(xs = floatList)
+    floatVararg(xs = floatArrayOf(1.0f))
+    floatVararg(xs = listOf(1.0f))
     floatVararg(
         *listOf(1.0f),
         *setOf(1.0f),
@@ -202,6 +230,10 @@ fun box(): String {
     doubleVararg(*doubleList)
     doubleVararg(*doubleArray)
     doubleVararg(*doubleSet)
+    doubleVararg(xs = doubleArray)
+    doubleVararg(xs = doubleList)
+    doubleVararg(xs = doubleArrayOf(1.0))
+    doubleVararg(xs = listOf(1.0))
     doubleVararg(
         *listOf(1.0),
         *setOf(1.0),
@@ -218,6 +250,9 @@ fun box(): String {
     anyVararg(*intList)
     anyVararg(*intArray)
     anyVararg(*intSet, *charSet, *byteArray)
+    anyVararg(xs = intList)
+    anyVararg(xs = intArrayOf(1))
+    anyVararg(xs = listOf('a'))
     anyVararg(
         *listOf('a'),
         *setOf('a'),
@@ -241,6 +276,10 @@ fun box(): String {
         *charSet,
         *byteArray
     )
+    genericVararg(xs = intArray)
+    genericVararg(xs = intList)
+    genericVararg(xs = intArrayOf(1))
+    genericVararg(xs = listOf(1))
     genericVararg(
         *listOf(true),
         *setOf(1L),
@@ -261,6 +300,10 @@ fun box(): String {
     stringVararg(*stringArray)
     stringVararg(*stringList)
     stringVararg(*stringSet)
+    stringVararg(xs = stringArray)
+    stringVararg(xs = stringList)
+    stringVararg(xs = arrayOf("a"))
+    stringVararg(xs = listOf("a"))
     stringVararg(
         *listOf("a", "b"),
         *setOf("a", "b"),
