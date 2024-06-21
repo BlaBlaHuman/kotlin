@@ -579,6 +579,43 @@ public abstract class KotlinBuiltIns {
         return getIterable().getDefaultType();
     }
 
+    @Nullable
+    public KotlinType getSpreadableCollectionElementType(@NotNull KotlinType type) {
+        if (isSpreadable(type) && !isPrimitiveArray(type) && !isUnsignedArrayType(type)) {
+            if (type.getArguments().size() != 1) {
+                throw new IllegalStateException(type.toString());
+            }
+            return type.getArguments().get(0).getType();
+        }
+
+        KotlinType notNullArrayType = TypeUtils.makeNotNullable(type);
+        //noinspection SuspiciousMethodCalls
+        KotlinType primitiveType = primitives.invoke().kotlinArrayTypeToPrimitiveKotlinType.get(notNullArrayType);
+        if (primitiveType != null) return primitiveType;
+
+        ModuleDescriptor module = DescriptorUtils.getContainingModuleOrNull(notNullArrayType);
+        if (module != null) {
+            KotlinType unsignedType = getElementTypeForUnsignedArray(notNullArrayType, module);
+            if (unsignedType != null) return unsignedType;
+        }
+
+        return null;
+    }
+
+    @NotNull
+    public static Boolean isSpreadable(@NotNull KotlinType type) {
+        return isNotNullConstructedFromGivenClass(type, FqNames.iterable.toUnsafe())
+                || isNotNullConstructedFromGivenClass(type, FqNames.set.toUnsafe())
+                || isNotNullConstructedFromGivenClass(type, FqNames.list.toUnsafe())
+                || isNotNullConstructedFromGivenClass(type, FqNames.collection.toUnsafe())
+                || isNotNullConstructedFromGivenClass(type, FqNames.mutableCollection.toUnsafe())
+                || isNotNullConstructedFromGivenClass(type, FqNames.mutableIterable.toUnsafe())
+                || isNotNullConstructedFromGivenClass(type, FqNames.mutableList.toUnsafe())
+                || isNotNullConstructedFromGivenClass(type, FqNames.mutableSet.toUnsafe())
+                || isUnsignedArrayType(type)
+                || isArrayOrPrimitiveArray(type);
+    }
+
     @NotNull
     public KotlinType getArrayElementType(@NotNull KotlinType arrayType) {
         if (isArray(arrayType)) {

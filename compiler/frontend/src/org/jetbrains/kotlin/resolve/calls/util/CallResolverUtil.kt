@@ -255,7 +255,7 @@ private fun arrayAssignmentToVarargInNamedFormInAnnotation(
     val isAllowedAssigningSingleElementsToVarargsInNamedForm =
         !languageVersionSettings.supportsFeature(LanguageFeature.ProhibitAssigningSingleElementsToVarargsInNamedForm)
 
-    if (isAllowedAssigningSingleElementsToVarargsInNamedForm && !isArrayOrArrayLiteral(argument, trace)) return false
+    if (isAllowedAssigningSingleElementsToVarargsInNamedForm && !isSpreadable(argument, trace)) return false
 
     return isParameterOfAnnotation(parameterDescriptor) && argument.isNamed() && parameterDescriptor.isVararg
 }
@@ -271,9 +271,17 @@ private fun arrayAssignmentToVarargInNamedFormInFunction(
     val isAllowedAssigningSingleElementsToVarargsInNamedForm =
         !languageVersionSettings.supportsFeature(LanguageFeature.ProhibitAssigningSingleElementsToVarargsInNamedForm)
 
-    if (isAllowedAssigningSingleElementsToVarargsInNamedForm && !isArrayOrArrayLiteral(argument, trace)) return false
+    if (isAllowedAssigningSingleElementsToVarargsInNamedForm && !isSpreadable(argument, trace)) return false
 
     return argument.isNamed() && parameterDescriptor.isVararg
+}
+
+fun isSpreadable(argument: ValueArgument, trace: BindingTrace): Boolean {
+    val argumentExpression = argument.getArgumentExpression() ?: return false
+    if (argumentExpression is KtCollectionLiteralExpression) return true
+
+    val type = trace.getType(argumentExpression) ?: return false
+    return KotlinBuiltIns.isSpreadable(type)
 }
 
 fun isArrayOrArrayLiteral(argument: ValueArgument, trace: BindingTrace): Boolean {

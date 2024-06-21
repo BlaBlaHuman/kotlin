@@ -312,7 +312,7 @@ internal class InsertImplicitCasts(
             elements.forEachIndexed { i, element ->
                 when (element) {
                     is IrSpreadElement ->
-                        element.expression = element.expression.cast(expression.type)
+                        element.expression = element.expression
                     is IrExpression ->
                         putElement(i, element.cast(varargElementType))
                 }

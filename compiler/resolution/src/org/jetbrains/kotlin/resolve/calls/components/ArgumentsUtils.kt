@@ -81,6 +81,13 @@ val ReceiverValueWithSmartCastInfo.stableType: UnwrappedType
         return prepareArgumentTypeRegardingCaptureTypes(intersectionType) ?: intersectionType
     }
 
+
+internal fun KotlinCallArgument.isSpread(parameter: ParameterDescriptor, languageVersionSettings: LanguageVersionSettings) =
+    this.isSpread ||
+            this.isArrayAssignedAsNamedArgumentInAnnotation(parameter, languageVersionSettings) ||
+            this.isArrayAssignedAsNamedArgumentInFunction(parameter, languageVersionSettings)
+
+
 internal fun KotlinCallArgument.getExpectedType(parameter: ParameterDescriptor, languageVersionSettings: LanguageVersionSettings) =
     if (
         this.isSpread ||
@@ -150,7 +157,7 @@ private fun KotlinCallArgument.isArrayAssignedAsNamedArgumentInAnnotation(
     val isAllowedAssigningSingleElementsToVarargsInNamedForm =
         !languageVersionSettings.supportsFeature(LanguageFeature.ProhibitAssigningSingleElementsToVarargsInNamedForm)
 
-    if (isAllowedAssigningSingleElementsToVarargsInNamedForm && !isArrayOrArrayLiteral()) return false
+    if (isAllowedAssigningSingleElementsToVarargsInNamedForm && !isSpreadableCollection()) return false
 
     return this.argumentName != null && parameter.isVararg && isParameterOfAnnotation(parameter)
 }
@@ -164,15 +171,15 @@ private fun KotlinCallArgument.isArrayAssignedAsNamedArgumentInFunction(
     val isAllowedAssigningSingleElementsToVarargsInNamedForm =
         !languageVersionSettings.supportsFeature(LanguageFeature.ProhibitAssigningSingleElementsToVarargsInNamedForm)
 
-    if (isAllowedAssigningSingleElementsToVarargsInNamedForm && !isArrayOrArrayLiteral()) return false
+    if (isAllowedAssigningSingleElementsToVarargsInNamedForm && !isSpreadableCollection()) return false
 
     return this.argumentName != null && parameter.isVararg
 }
 
-fun KotlinCallArgument.isArrayOrArrayLiteral(): Boolean {
+fun KotlinCallArgument.isSpreadableCollection(): Boolean {
     if (this is CollectionLiteralKotlinCallArgument) return true
     if (this !is SimpleKotlinCallArgument) return false
 
     val type = this.receiver.receiverValue.type
-    return KotlinBuiltIns.isArrayOrPrimitiveArray(type)
+    return KotlinBuiltIns.isSpreadable(type)
 }

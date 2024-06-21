@@ -270,7 +270,7 @@ fun ClassId.canBeSpread() = (listOf(
     StandardClassIds.MutableList,
     StandardClassIds.Set,
     StandardClassIds.MutableSet,
-) + StandardClassIds.elementTypeByPrimitiveArrayType.map { it.key }).contains(this)
+) + StandardClassIds.elementTypeByPrimitiveArrayType.map { it.key } + StandardClassIds.elementTypeByUnsignedArrayType.map { it.key }).contains(this)
 
 
 private fun String.testId() = ClassId(StandardClassIds.BASE_TEST_PACKAGE, Name.identifier(this))
