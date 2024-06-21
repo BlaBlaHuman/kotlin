@@ -9,5 +9,5 @@ fun testSpread(a: Any): IntArray {
   when {
     a !is IntArray -> return intArrayOf()
   }
-  return intArrayOf(elements = [*a /*as IntArray */])
+  return intArrayOf(elements = [*a])
 }
