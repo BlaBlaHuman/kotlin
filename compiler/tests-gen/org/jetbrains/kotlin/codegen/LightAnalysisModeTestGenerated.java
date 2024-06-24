@@ -43785,11 +43785,6 @@ public class LightAnalysisModeTestGenerated extends AbstractLightAnalysisModeTes
             runTest("compiler/testData/codegen/box/vararg/assigningArrayToVarargInAnnotation.kt");
         }
 
-        @TestMetadata("assigningNonArrayToVarargInAnnotation.kt")
-        public void testAssigningNonArrayToVarargInAnnotation() throws Exception {
-            runTest("compiler/testData/codegen/box/vararg/assigningNonArrayToVarargInAnnotation.kt");
-        }
-
         @TestMetadata("boxingArgumentsForVararg.kt")
         public void testBoxingArgumentsForVararg() throws Exception {
             runTest("compiler/testData/codegen/box/vararg/boxingArgumentsForVararg.kt");

@@ -55263,12 +55263,6 @@ public class LLFirBlackBoxCodegenBasedTestGenerated extends AbstractLLFirBlackBo
         }
 
         @Test
-        @TestMetadata("assigningNonArrayToVarargInAnnotation.kt")
-        public void testAssigningNonArrayToVarargInAnnotation() throws Exception {
-            runTest("compiler/testData/codegen/box/vararg/assigningNonArrayToVarargInAnnotation.kt");
-        }
-
-        @Test
         @TestMetadata("boxingArgumentsForVararg.kt")
         public void testBoxingArgumentsForVararg() throws Exception {
             runTest("compiler/testData/codegen/box/vararg/boxingArgumentsForVararg.kt");
