@@ -310,11 +310,8 @@ internal class InsertImplicitCasts(
     override fun visitVararg(expression: IrVararg): IrExpression =
         expression.transformPostfix {
             elements.forEachIndexed { i, element ->
-                when (element) {
-                    is IrSpreadElement ->
-                        element.expression = element.expression
-                    is IrExpression ->
-                        putElement(i, element.cast(varargElementType))
+                if (element is IrExpression) {
+                    putElement(i, element.cast(varargElementType))
                 }
             }
         }
