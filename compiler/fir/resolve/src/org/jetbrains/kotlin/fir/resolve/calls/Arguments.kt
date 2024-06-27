@@ -360,7 +360,7 @@ private fun checkApplicabilityForArgumentType(
     var argumentType = captureFromTypeParameterUpperBoundIfNeeded(argumentTypeBeforeCapturing, expectedType, context.session)
 
     if (isSpread && !argumentType.isNullable) {
-        argumentType = argumentType.spreadableCollectionElementType()?.also {
+        argumentType = argumentType.spreadableCollectionElementType(context.typeContext.newTypeCheckerState(errorTypesEqualToAnything = false, stubTypesEqualToAnything = false))?.also {
             expectedType =
                 expectedType.arrayElementType()
                     ?: error(

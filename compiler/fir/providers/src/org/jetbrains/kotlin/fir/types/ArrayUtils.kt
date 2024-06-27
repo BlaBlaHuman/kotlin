@@ -6,7 +6,9 @@
 package org.jetbrains.kotlin.fir.types
 
 import org.jetbrains.kotlin.name.StandardClassIds
-import org.jetbrains.kotlin.name.canBeSpread
+import org.jetbrains.kotlin.types.AbstractTypeChecker
+import org.jetbrains.kotlin.types.TypeCheckerState
+import org.jetbrains.kotlin.types.model.typeConstructor
 import org.jetbrains.kotlin.utils.addToStdlib.runIf
 
 val ConeKotlinType.isArrayOrPrimitiveArray: Boolean
@@ -43,27 +45,24 @@ fun ConeKotlinType.arrayElementType(checkUnsignedArrays: Boolean = true): ConeKo
     }
 }
 
-fun ConeKotlinType.spreadableCollectionElementType(checkUnsignedArrays: Boolean = true): ConeKotlinType? {
-    return when (val argument = spreadableCollectionElementTypeArgument(checkUnsignedArrays)) {
+fun ConeKotlinType.spreadableCollectionElementType(typeCheckerState: TypeCheckerState, checkUnsignedArrays: Boolean = true): ConeKotlinType? {
+    return when (val argument = spreadableCollectionElementTypeArgument(typeCheckerState, checkUnsignedArrays)) {
         is ConeKotlinTypeProjection -> argument.type
         else -> null
     }
 }
 
-private fun ConeKotlinType.spreadableCollectionElementTypeArgument(checkUnsignedArrays: Boolean = true): ConeTypeProjection? {
+private fun ConeKotlinType.spreadableCollectionElementTypeArgument(typeCheckerState: TypeCheckerState, checkUnsignedArrays: Boolean = true): ConeTypeProjection? {
     val type = this.lowerBoundIfFlexible()
     if (type !is ConeClassLikeType) return null
     val classId = type.lookupTag.classId
 
-    if (!classId.canBeSpread()) {
-        return null
-    }
-
-    if (type.typeArguments.isNotEmpty()) {
-        if (type.typeArguments.size > 1) {
-            error("Spreadable collection type should have only one type argument: ${type.renderReadable()}")
-        }
-        return type.typeArguments.first()
+    AbstractTypeChecker.findCorrespondingSupertypes(
+        typeCheckerState,
+        type,
+        StandardClassIds.Iterable.constructClassLikeType().typeConstructor(typeCheckerState.typeSystemContext)
+    ).singleOrNull()?.let {
+        (it as? ConeClassLikeType)?.typeArguments?.singleOrNull()?.type?.let { typeArgument -> return typeArgument }
     }
 
     if (type.isString || type.isCharSequence) {
