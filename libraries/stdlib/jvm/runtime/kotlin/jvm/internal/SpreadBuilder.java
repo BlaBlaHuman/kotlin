@@ -32,6 +32,12 @@ public class SpreadBuilder {
         else if (container instanceof Collection) {
             list.addAll((Collection) container);
         }
+        else if (container instanceof CharSequence) {
+            CharSequence seq = (CharSequence) container;
+            for (int i = 0; i < seq.length(); i++) {
+                list.add(seq.charAt(i));
+            }
+        }
         else if (container instanceof Iterable) {
             for (Object element : (Iterable) container) {
                 list.add(element);

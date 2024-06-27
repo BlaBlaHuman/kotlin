@@ -60,6 +60,9 @@ public abstract class PrimitiveSpreadBuilder<T : Any>(private val size: Int) {
             is DoubleArray -> {
                 element.size
             }
+            is CharSequence -> {
+                element.length
+            }
             else -> {
                 throw AssertionError("")
             }
@@ -119,6 +122,13 @@ public abstract class PrimitiveSpreadBuilder<T : Any>(private val size: Int) {
                             is FloatArray -> result[dstIndex + index] = element as Float
                             is DoubleArray -> result[dstIndex + index] = element as Double
                             is BooleanArray -> result[dstIndex + index] = element as Boolean
+                            else -> throw AssertionError()
+                        }
+                    }
+                } else if (spreadArgument is CharSequence) {
+                    spreadArgument.forEachIndexed { index, element ->
+                        when (result) {
+                            is CharArray -> result[dstIndex + index] = element
                             else -> throw AssertionError()
                         }
                     }

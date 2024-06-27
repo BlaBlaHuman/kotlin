@@ -270,6 +270,8 @@ fun ClassId.canBeSpread() = (listOf(
     StandardClassIds.MutableList,
     StandardClassIds.Set,
     StandardClassIds.MutableSet,
+    StandardClassIds.CharSequence,
+    StandardClassIds.String,
 ) + StandardClassIds.elementTypeByPrimitiveArrayType.map { it.key } + StandardClassIds.elementTypeByUnsignedArrayType.map { it.key }).contains(this)
 
 

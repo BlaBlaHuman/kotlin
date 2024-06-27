@@ -59,8 +59,15 @@ private fun ConeKotlinType.spreadableCollectionElementTypeArgument(checkUnsigned
         return null
     }
 
-    if (type.typeArguments.size == 1) {
+    if (type.typeArguments.isNotEmpty()) {
+        if (type.typeArguments.size > 1) {
+            error("Spreadable collection type should have only one type argument: ${type.renderReadable()}")
+        }
         return type.typeArguments.first()
+    }
+
+    if (type.isString || type.isCharSequence) {
+        return StandardClassIds.Char.constructClassLikeType(emptyArray(), isNullable = false)
     }
 
     val elementType = StandardClassIds.elementTypeByPrimitiveArrayType[classId] ?: runIf(checkUnsignedArrays) {
@@ -70,7 +77,8 @@ private fun ConeKotlinType.spreadableCollectionElementTypeArgument(checkUnsigned
     if (elementType != null) {
         return elementType.constructClassLikeType(emptyArray(), isNullable = false)
     }
-    return null
+
+    error("Could not retrieve element type for spreadable collection: ${type.renderReadable()}")
 }
 
 private fun ConeKotlinType.arrayElementTypeArgument(checkUnsignedArrays: Boolean = true): ConeTypeProjection? {

@@ -581,15 +581,19 @@ public abstract class KotlinBuiltIns {
 
     @Nullable
     public KotlinType getSpreadableCollectionElementType(@NotNull KotlinType type) {
-        if (isSpreadable(type) && !isPrimitiveArray(type) && !isUnsignedArrayType(type)) {
+        if (!isSpreadable(type)) return null;
+
+        if (!type.getArguments().isEmpty()) {
             if (type.getArguments().size() != 1) {
                 throw new IllegalStateException(type.toString());
             }
             return type.getArguments().get(0).getType();
         }
 
+        if (isCharSequence(type) || isString(type))
+            return getCharType();
+
         KotlinType notNullArrayType = TypeUtils.makeNotNullable(type);
-        //noinspection SuspiciousMethodCalls
         KotlinType primitiveType = primitives.invoke().kotlinArrayTypeToPrimitiveKotlinType.get(notNullArrayType);
         if (primitiveType != null) return primitiveType;
 
@@ -599,7 +603,7 @@ public abstract class KotlinBuiltIns {
             if (unsignedType != null) return unsignedType;
         }
 
-        return null;
+        throw new IllegalStateException("Could not retrieve element type from: " + type.toString());
     }
 
     @NotNull
@@ -612,6 +616,8 @@ public abstract class KotlinBuiltIns {
                 || isNotNullConstructedFromGivenClass(type, FqNames.mutableIterable.toUnsafe())
                 || isNotNullConstructedFromGivenClass(type, FqNames.mutableList.toUnsafe())
                 || isNotNullConstructedFromGivenClass(type, FqNames.mutableSet.toUnsafe())
+                || isNotNullConstructedFromGivenClass(type, FqNames.charSequence)
+                || isNotNullConstructedFromGivenClass(type, FqNames.string)
                 || isUnsignedArrayType(type)
                 || isArrayOrPrimitiveArray(type);
     }

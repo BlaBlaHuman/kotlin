@@ -126,7 +126,7 @@ fun IrType.isNothing(): Boolean = isNotNullClassType(IdSignatureValues.nothing)
 fun IrType.isNullableNothing(): Boolean = isNullableClassType(IdSignatureValues.nothing)
 
 fun IrType.isSpreadable(): Boolean {
-    if (this.isArray() || this.isPrimitiveArray() || this.isUnsignedArray())
+    if (this.isArray() || this.isPrimitiveArray() || this.isUnsignedArray() || this.isString() || this.isCharSequence())
         return true
 
     val currentClass = this.getClass() ?: return false
