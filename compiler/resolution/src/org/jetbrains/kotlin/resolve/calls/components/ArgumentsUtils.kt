@@ -31,6 +31,7 @@ import org.jetbrains.kotlin.resolve.scopes.receivers.ReceiverValueWithSmartCastI
 import org.jetbrains.kotlin.types.UnwrappedType
 import org.jetbrains.kotlin.types.checker.intersectWrappedTypes
 import org.jetbrains.kotlin.types.checker.prepareArgumentTypeRegardingCaptureTypes
+import org.jetbrains.kotlin.types.typeUtil.builtIns
 import org.jetbrains.kotlin.types.typeUtil.isNullableNothing
 import org.jetbrains.kotlin.types.typeUtil.makeNullable
 import org.jetbrains.kotlin.utils.DFS
@@ -181,5 +182,5 @@ fun KotlinCallArgument.isSpreadableCollection(): Boolean {
     if (this !is SimpleKotlinCallArgument) return false
 
     val type = this.receiver.receiverValue.type
-    return KotlinBuiltIns.isSpreadable(type)
+    return type.builtIns.isSpreadable(type)
 }

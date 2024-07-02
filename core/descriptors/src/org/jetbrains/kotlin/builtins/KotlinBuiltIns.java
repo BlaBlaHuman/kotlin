@@ -35,7 +35,7 @@ import java.util.*;
 
 import static org.jetbrains.kotlin.builtins.PrimitiveType.*;
 import static org.jetbrains.kotlin.builtins.StandardNames.*;
-import static org.jetbrains.kotlin.resolve.DescriptorUtils.getFqName;
+import static org.jetbrains.kotlin.resolve.DescriptorUtils.*;
 
 public abstract class KotlinBuiltIns {
     private ModuleDescriptorImpl builtInsModule;
@@ -603,22 +603,16 @@ public abstract class KotlinBuiltIns {
             if (unsignedType != null) return unsignedType;
         }
 
-        throw new IllegalStateException("Could not retrieve element type from: " + type.toString());
+        throw new IllegalStateException("Could not retrieve element type from: " + type);
     }
 
     @NotNull
-    public static Boolean isSpreadable(@NotNull KotlinType type) {
-        return isNotNullConstructedFromGivenClass(type, FqNames.iterable.toUnsafe())
-                || isNotNullConstructedFromGivenClass(type, FqNames.set.toUnsafe())
-                || isNotNullConstructedFromGivenClass(type, FqNames.list.toUnsafe())
-                || isNotNullConstructedFromGivenClass(type, FqNames.collection.toUnsafe())
-                || isNotNullConstructedFromGivenClass(type, FqNames.mutableCollection.toUnsafe())
-                || isNotNullConstructedFromGivenClass(type, FqNames.mutableIterable.toUnsafe())
-                || isNotNullConstructedFromGivenClass(type, FqNames.mutableList.toUnsafe())
-                || isNotNullConstructedFromGivenClass(type, FqNames.mutableSet.toUnsafe())
-                || isNotNullConstructedFromGivenClass(type, FqNames.charSequence)
-                || isNotNullConstructedFromGivenClass(type, FqNames.string)
-                || isUnsignedArrayType(type)
+    public Boolean isSpreadable(@NotNull KotlinType type) {
+        ClassifierDescriptor iterableDeclarationDescriptor = getIterableType().getConstructor().getDeclarationDescriptor();
+        ClassifierDescriptor charSequenceDeclarationDescriptor = getCharSequence().getDefaultType().getConstructor().getDeclarationDescriptor();
+
+        return (iterableDeclarationDescriptor != null && isSubtypeOfClass(type, iterableDeclarationDescriptor))
+                || (charSequenceDeclarationDescriptor != null && isSubtypeOfClass(type, charSequenceDeclarationDescriptor))
                 || isArrayOrPrimitiveArray(type);
     }
 
