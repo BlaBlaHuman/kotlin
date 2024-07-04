@@ -55,7 +55,6 @@ fun ConeKotlinType.spreadableCollectionElementType(typeCheckerState: TypeChecker
 private fun ConeKotlinType.spreadableCollectionElementTypeArgument(typeCheckerState: TypeCheckerState, checkUnsignedArrays: Boolean = true): ConeTypeProjection? {
     val type = this.lowerBoundIfFlexible()
     if (type !is ConeClassLikeType) return null
-    val classId = type.lookupTag.classId
 
     AbstractTypeChecker.findCorrespondingSupertypes(
         typeCheckerState,
@@ -69,13 +68,7 @@ private fun ConeKotlinType.spreadableCollectionElementTypeArgument(typeCheckerSt
         return StandardClassIds.Char.constructClassLikeType(emptyArray(), isNullable = false)
     }
 
-    val elementType = StandardClassIds.elementTypeByPrimitiveArrayType[classId] ?: runIf(checkUnsignedArrays) {
-        StandardClassIds.elementTypeByUnsignedArrayType[classId]
-    }
-
-    if (elementType != null) {
-        return elementType.constructClassLikeType(emptyArray(), isNullable = false)
-    }
+    this.arrayElementTypeArgument(checkUnsignedArrays)?.let { return it }
 
     error("Could not retrieve element type for spreadable collection: ${type.renderReadable()}")
 }
