@@ -55269,6 +55269,12 @@ public class LLFirBlackBoxCodegenBasedTestGenerated extends AbstractLLFirBlackBo
         }
 
         @Test
+        @TestMetadata("callingJavaVarargsWithNonArrayCollections.kt")
+        public void testCallingJavaVarargsWithNonArrayCollections() throws Exception {
+            runTest("compiler/testData/codegen/box/vararg/callingJavaVarargsWithNonArrayCollections.kt");
+        }
+
+        @Test
         @TestMetadata("doNotCopyImmediatelyCreatedArrays.kt")
         public void testDoNotCopyImmediatelyCreatedArrays() throws Exception {
             runTest("compiler/testData/codegen/box/vararg/doNotCopyImmediatelyCreatedArrays.kt");

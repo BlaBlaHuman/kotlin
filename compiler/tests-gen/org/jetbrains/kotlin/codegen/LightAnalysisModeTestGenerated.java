@@ -43790,6 +43790,11 @@ public class LightAnalysisModeTestGenerated extends AbstractLightAnalysisModeTes
             runTest("compiler/testData/codegen/box/vararg/boxingArgumentsForVararg.kt");
         }
 
+        @TestMetadata("callingJavaVarargsWithNonArrayCollections.kt")
+        public void testCallingJavaVarargsWithNonArrayCollections() throws Exception {
+            runTest("compiler/testData/codegen/box/vararg/callingJavaVarargsWithNonArrayCollections.kt");
+        }
+
         @TestMetadata("doNotCopyImmediatelyCreatedArrays.kt")
         public void testDoNotCopyImmediatelyCreatedArrays() throws Exception {
             runTest("compiler/testData/codegen/box/vararg/doNotCopyImmediatelyCreatedArrays.kt");
