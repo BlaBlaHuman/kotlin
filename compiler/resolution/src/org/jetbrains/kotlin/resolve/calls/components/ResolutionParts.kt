@@ -517,6 +517,7 @@ private fun ResolutionCandidate.resolveKotlinArgument(
         convertedConstant
     } else null
 
+    val isSpread = (candidateParameter?.let { argument.isSpread(it, callComponents.languageVersionSettings) } ?: false) && candidateParameter?.isVararg == true
 
     val inferenceSession = resolutionCallbacks.inferenceSession
     if (candidateExpectedType == null || // Nothing to convert
@@ -534,7 +535,8 @@ private fun ResolutionCandidate.resolveKotlinArgument(
             receiverInfo,
             convertedArgument?.unknownIntegerType?.unwrap(),
             inferenceSession,
-            selectorCall = receiverInfo.selectorCall
+            selectorCall = receiverInfo.selectorCall,
+            isSpread = isSpread
         )
 
         addResolvedKtPrimitive(resolvedAtom)
@@ -548,7 +550,8 @@ private fun ResolutionCandidate.resolveKotlinArgument(
                 this@resolveKotlinArgument,
                 receiverInfo,
                 convertedArgument?.unknownIntegerType?.unwrap(),
-                inferenceSession
+                inferenceSession,
+                isSpread = isSpread
             )
 
             if (!hasContradiction) {
@@ -580,7 +583,8 @@ private fun ResolutionCandidate.resolveKotlinArgument(
                 this@resolveKotlinArgument,
                 receiverInfo,
                 convertedArgument?.unknownIntegerType?.unwrap(),
-                inferenceSession
+                inferenceSession,
+                isSpread = isSpread
             )
             addResolvedKtPrimitive(resolvedAtom)
         }

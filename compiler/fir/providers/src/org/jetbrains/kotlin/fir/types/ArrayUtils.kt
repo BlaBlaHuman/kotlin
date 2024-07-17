@@ -6,6 +6,9 @@
 package org.jetbrains.kotlin.fir.types
 
 import org.jetbrains.kotlin.name.StandardClassIds
+import org.jetbrains.kotlin.types.AbstractTypeChecker
+import org.jetbrains.kotlin.types.TypeCheckerState
+import org.jetbrains.kotlin.types.model.typeConstructor
 import org.jetbrains.kotlin.utils.addToStdlib.runIf
 
 val ConeKotlinType.isArrayOrPrimitiveArray: Boolean
@@ -42,6 +45,34 @@ fun ConeKotlinType.arrayElementType(checkUnsignedArrays: Boolean = true): ConeKo
     }
 }
 
+fun ConeKotlinType.spreadableCollectionElementType(typeCheckerState: TypeCheckerState, checkUnsignedArrays: Boolean = true): ConeKotlinType? {
+    return when (val argument = spreadableCollectionElementTypeArgument(typeCheckerState, checkUnsignedArrays)) {
+        is ConeKotlinTypeProjection -> argument.type
+        else -> null
+    }
+}
+
+private fun ConeKotlinType.spreadableCollectionElementTypeArgument(typeCheckerState: TypeCheckerState, checkUnsignedArrays: Boolean = true): ConeTypeProjection? {
+    val type = this.lowerBoundIfFlexible()
+    if (type !is ConeClassLikeType) return null
+
+    AbstractTypeChecker.findCorrespondingSupertypes(
+        typeCheckerState,
+        type,
+        StandardClassIds.Iterable.constructClassLikeType().typeConstructor(typeCheckerState.typeSystemContext)
+    ).singleOrNull()?.let {
+        (it as? ConeClassLikeType)?.typeArguments?.singleOrNull()?.type?.let { typeArgument -> return typeArgument }
+    }
+
+    if (type.isString || type.isCharSequence) {
+        return StandardClassIds.Char.constructClassLikeType(emptyArray(), isNullable = false)
+    }
+
+    this.arrayElementTypeArgument(checkUnsignedArrays)?.let { return it }
+
+    error("Could not retrieve element type for spreadable collection: ${type.renderReadable()}")
+}
+
 private fun ConeKotlinType.arrayElementTypeArgument(checkUnsignedArrays: Boolean = true): ConeTypeProjection? {
     val type = this.lowerBoundIfFlexible()
     if (type !is ConeClassLikeType) return null
@@ -55,7 +86,6 @@ private fun ConeKotlinType.arrayElementTypeArgument(checkUnsignedArrays: Boolean
     if (elementType != null) {
         return elementType.constructClassLikeType(emptyArray(), isNullable = false)
     }
-
     return null
 }
 

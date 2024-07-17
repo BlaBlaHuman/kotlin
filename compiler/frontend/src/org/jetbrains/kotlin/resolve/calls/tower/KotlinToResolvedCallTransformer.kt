@@ -6,6 +6,7 @@
 package org.jetbrains.kotlin.resolve.calls.tower
 
 import org.jetbrains.kotlin.builtins.KotlinBuiltIns
+import org.jetbrains.kotlin.config.LanguageFeature
 import org.jetbrains.kotlin.descriptors.*
 import org.jetbrains.kotlin.diagnostics.Errors
 import org.jetbrains.kotlin.extensions.internal.CandidateInterceptor
@@ -27,10 +28,7 @@ import org.jetbrains.kotlin.resolve.calls.model.*
 import org.jetbrains.kotlin.resolve.calls.smartcasts.DataFlowValueFactory
 import org.jetbrains.kotlin.resolve.calls.smartcasts.SmartCastManager
 import org.jetbrains.kotlin.resolve.calls.tasks.TracingStrategy
-import org.jetbrains.kotlin.resolve.calls.util.getEffectiveExpectedType
-import org.jetbrains.kotlin.resolve.calls.util.getResolvedCall
-import org.jetbrains.kotlin.resolve.calls.util.isFakeElement
-import org.jetbrains.kotlin.resolve.calls.util.makeNullableTypeIfSafeReceiver
+import org.jetbrains.kotlin.resolve.calls.util.*
 import org.jetbrains.kotlin.resolve.constants.CompileTimeConstant
 import org.jetbrains.kotlin.resolve.constants.IntegerLiteralTypeConstructor
 import org.jetbrains.kotlin.resolve.constants.evaluate.ConstantExpressionEvaluator
@@ -334,13 +332,18 @@ class KotlinToResolvedCallTransformer(
                 )
             }
 
+            val isSpread =
+                parameter?.varargElementType != null && (valueArgument.getSpreadElement() != null || (context.languageVersionSettings.supportsFeature(
+                    LanguageFeature.AllowAssigningArrayElementsToVarargsInNamedFormForFunctions) && valueArgument.isNamed()))
+
             if (!valueArgument.isExternal()) {
                 updateRecordedType(
                     argumentExpression,
                     parameter,
                     newContext,
                     constantConvertedArgument?.unknownIntegerType?.unwrap(),
-                    resolvedCall.isReallySuccess()
+                    resolvedCall.isReallySuccess(),
+                    isSpread = isSpread,
                 )
             }
         }
@@ -352,6 +355,7 @@ class KotlinToResolvedCallTransformer(
         context: BasicCallResolutionContext,
         convertedArgumentType: UnwrappedType?,
         reportErrorForTypeMismatch: Boolean,
+        isSpread: Boolean = false
     ): KotlinType? {
         val deparenthesized = expression.let {
             KtPsiUtil.getLastElementDeparenthesized(it, context.statementFilter)
@@ -388,9 +392,19 @@ class KotlinToResolvedCallTransformer(
             context.trace.report(Errors.SIGNED_CONSTANT_CONVERTED_TO_UNSIGNED.on(deparenthesized))
         }
 
-        updatedType = updateRecordedTypeForArgument(updatedType, recordedType, recordedTypeForParenthesized, expression, context)
+        var finalContext = context
+        updatedType = updateRecordedTypeForArgument(updatedType, recordedType, recordedTypeForParenthesized, expression, context).let {
+            if (isSpread && it != null && !it.isNullable())
+                builtIns.getSpreadableCollectionElementType(it)?.also {
+                    val expectedElementType =
+                        builtIns.getSpreadableCollectionElementType(context.expectedType) ?: error("Unable to retrieve the element type")
+                    finalContext = context.replaceExpectedType(expectedElementType)
+                } ?: it
+            else
+                it
+        }
 
-        dataFlowAnalyzer.checkType(updatedType, deparenthesized, context, reportErrorDuringTypeCheck)
+        dataFlowAnalyzer.checkType(updatedType, deparenthesized, finalContext, reportErrorDuringTypeCheck)
 
         return updatedType
     }

@@ -54,12 +54,22 @@ fun checkSimpleArgument(
     receiverInfo: ReceiverInfo,
     convertedType: UnwrappedType?,
     inferenceSession: InferenceSession?,
-    selectorCall: KotlinCall?
+    selectorCall: KotlinCall?,
+    isSpread: Boolean = false,
 ): ResolvedAtom = when (argument) {
     is ExpressionKotlinCallArgument ->
-        checkExpressionArgument(csBuilder, argument, expectedType, diagnosticsHolder, receiverInfo.isReceiver, convertedType, selectorCall)
+        checkExpressionArgument(
+            csBuilder,
+            argument,
+            expectedType,
+            diagnosticsHolder,
+            receiverInfo.isReceiver,
+            convertedType,
+            selectorCall,
+            isSpread
+        )
     is SubKotlinCallArgument ->
-        checkSubCallArgument(csBuilder, argument, expectedType, diagnosticsHolder, receiverInfo, inferenceSession)
+        checkSubCallArgument(csBuilder, argument, expectedType, diagnosticsHolder, receiverInfo, inferenceSession, isSpread)
     else ->
         unexpectedArgument(argument)
 }
@@ -67,17 +77,47 @@ fun checkSimpleArgument(
 private fun checkExpressionArgument(
     csBuilder: ConstraintSystemBuilder,
     expressionArgument: ExpressionKotlinCallArgument,
-    expectedType: UnwrappedType?,
+    initialExpectedType: UnwrappedType?,
     diagnosticsHolder: KotlinDiagnosticsHolder,
     isReceiver: Boolean,
     convertedType: UnwrappedType?,
-    selectorCall: KotlinCall?
+    selectorCall: KotlinCall?,
+    isSpread: Boolean = false
 ): ResolvedAtom {
     val resolvedExpression = ResolvedExpressionAtom(expressionArgument)
-    if (expectedType == null) return resolvedExpression
+    if (initialExpectedType == null) return resolvedExpression
+
+
+    var expectedType =
+        if (isSpread) {
+            csBuilder.builtIns.getSpreadableCollectionElementType(initialExpectedType)?.unwrap()
+                ?: error("Could not retrieve vararg parameter element type")
+        } else {
+            initialExpectedType
+        }
 
     // todo run this approximation only once for call
-    val argumentType = convertedType ?: captureFromTypeParameterUpperBoundIfNeeded(expressionArgument.receiver.stableType, expectedType)
+    val argumentType =
+        if (isSpread) {
+            val elementTypeFromConvertedType = convertedType?.let {
+                csBuilder.builtIns.getSpreadableCollectionElementType(it)?.unwrap()
+            }
+
+            if (elementTypeFromConvertedType != null)
+                elementTypeFromConvertedType
+            else {
+                val expressionStableType =
+                    csBuilder.builtIns.getSpreadableCollectionElementType(expressionArgument.receiver.stableType)?.unwrap()
+                if (expressionStableType == null) {
+                    expectedType = initialExpectedType
+                    convertedType ?: captureFromTypeParameterUpperBoundIfNeeded(expressionArgument.receiver.stableType, expectedType)
+                } else {
+                    captureFromTypeParameterUpperBoundIfNeeded(expressionStableType, expectedType)
+                }
+            }
+        } else {
+            convertedType ?: captureFromTypeParameterUpperBoundIfNeeded(expressionArgument.receiver.stableType, expectedType)
+        }
 
     fun unstableSmartCastOrSubtypeError(
         unstableType: UnwrappedType?, actualExpectedType: UnwrappedType, position: ConstraintPosition
@@ -184,27 +224,38 @@ fun captureFromTypeParameterUpperBoundIfNeeded(argumentType: UnwrappedType, expe
 private fun checkSubCallArgument(
     csBuilder: ConstraintSystemBuilder,
     subCallArgument: SubKotlinCallArgument,
-    expectedType: UnwrappedType?,
+    initialExpectedType: UnwrappedType?,
     diagnosticsHolder: KotlinDiagnosticsHolder,
     receiverInfo: ReceiverInfo,
-    inferenceSession: InferenceSession?
+    inferenceSession: InferenceSession?,
+    isSpread: Boolean = false
 ): ResolvedAtom {
     val subCallResult = ResolvedSubCallArgument(
         subCallArgument, receiverInfo.isReceiver && inferenceSession?.resolveReceiverIndependently() == true
     )
 
-    if (expectedType == null) return subCallResult
+    var expectedType = initialExpectedType ?: return subCallResult
+
+    // subArgument cannot has stable smartcast
+    // return type can contains fixed type variables
+    val currentReturnType =
+        (csBuilder.buildCurrentSubstitutor() as NewTypeSubstitutor)
+            .safeSubstitute(subCallArgument.receiver.receiverValue.type.unwrap()).let { argumentType ->
+                if (isSpread && !argumentType.isNullable()) {
+                    csBuilder.builtIns.getSpreadableCollectionElementType(argumentType)?.unwrap()?.also {
+                        expectedType = csBuilder.builtIns.getSpreadableCollectionElementType(initialExpectedType)?.unwrap()
+                            ?: error("Couldn't get the element type of the vararg parameter")
+                    } ?: argumentType
+                } else {
+                    argumentType
+                }
+            }
 
     val expectedNullableType = expectedType.makeNullableAsSpecified(true)
     val position =
         if (receiverInfo.isReceiver) ReceiverConstraintPositionImpl(subCallArgument, subCallArgument.callResult.resultCallAtom.atom)
         else ArgumentConstraintPositionImpl(subCallArgument)
 
-    // subArgument cannot has stable smartcast
-    // return type can contains fixed type variables
-    val currentReturnType =
-        (csBuilder.buildCurrentSubstitutor() as NewTypeSubstitutor)
-            .safeSubstitute(subCallArgument.receiver.receiverValue.type.unwrap())
     if (subCallArgument.isSafeCall) {
         csBuilder.addSubtypeConstraint(currentReturnType, expectedNullableType, position)
         return subCallResult

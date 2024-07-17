@@ -40033,6 +40033,12 @@ public class LLFirPreresolvedReversedDiagnosticCompilerFE10TestDataTestGenerated
             }
 
             @Test
+            @TestMetadata("assigningNonArraysToVarargsInAnnotations.kt")
+            public void testAssigningNonArraysToVarargsInAnnotations() throws Exception {
+                runTest("compiler/testData/diagnostics/tests/varargs/assigningNonArraysToVarargsInAnnotations.kt");
+            }
+
+            @Test
             @TestMetadata("assigningSingleElementsInNamedFormAnnDeprecation_after.kt")
             public void testAssigningSingleElementsInNamedFormAnnDeprecation_after() throws Exception {
                 runTest("compiler/testData/diagnostics/tests/varargs/assigningSingleElementsInNamedFormAnnDeprecation_after.kt");

@@ -32,6 +32,12 @@ public class SpreadBuilder {
         else if (container instanceof Collection) {
             list.addAll((Collection) container);
         }
+        else if (container instanceof CharSequence) {
+            CharSequence seq = (CharSequence) container;
+            for (int i = 0; i < seq.length(); i++) {
+                list.add(seq.charAt(i));
+            }
+        }
         else if (container instanceof Iterable) {
             for (Object element : (Iterable) container) {
                 list.add(element);
@@ -40,6 +46,78 @@ public class SpreadBuilder {
         else if (container instanceof Iterator) {
             for (Iterator iterator = (Iterator) container; iterator.hasNext(); ) {
                 list.add(iterator.next());
+            }
+        }
+        else if (container instanceof int[]) {
+            int[] array = (int[]) container;
+            if (array.length > 0) {
+                list.ensureCapacity(list.size() + array.length);
+                for (Integer j : array) {
+                    list.add(j);
+                }
+            }
+        }
+        else if (container instanceof long[]) {
+            long[] array = (long[]) container;
+            if (array.length > 0) {
+                list.ensureCapacity(list.size() + array.length);
+                for (Long j : array) {
+                    list.add(j);
+                }
+            }
+        }
+        else if (container instanceof double[]) {
+            double[] array = (double[]) container;
+            if (array.length > 0) {
+                list.ensureCapacity(list.size() + array.length);
+                for (Double j : array) {
+                    list.add(j);
+                }
+            }
+        }
+        else if (container instanceof float[]) {
+            float[] array = (float[]) container;
+            if (array.length > 0) {
+                list.ensureCapacity(list.size() + array.length);
+                for (Float j : array) {
+                    list.add(j);
+                }
+            }
+        }
+        else if (container instanceof short[]) {
+            short[] array = (short[]) container;
+            if (array.length > 0) {
+                list.ensureCapacity(list.size() + array.length);
+                for (Short j : array) {
+                    list.add(j);
+                }
+            }
+        }
+        else if (container instanceof byte[]) {
+            byte[] array = (byte[]) container;
+            if (array.length > 0) {
+                list.ensureCapacity(list.size() + array.length);
+                for (Byte j : array) {
+                    list.add(j);
+                }
+            }
+        }
+        else if (container instanceof char[]) {
+            char[] array = (char[]) container;
+            if (array.length > 0) {
+                list.ensureCapacity(list.size() + array.length);
+                for (Character j : array) {
+                    list.add(j);
+                }
+            }
+        }
+        else if (container instanceof boolean[]) {
+            boolean[] array = (boolean[]) container;
+            if (array.length > 0) {
+                list.ensureCapacity(list.size() + array.length);
+                for (Boolean j : array) {
+                    list.add(j);
+                }
             }
         }
         else {

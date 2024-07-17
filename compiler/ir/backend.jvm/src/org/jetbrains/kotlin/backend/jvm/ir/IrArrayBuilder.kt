@@ -12,9 +12,7 @@ import org.jetbrains.kotlin.ir.expressions.IrExpression
 import org.jetbrains.kotlin.ir.expressions.IrFunctionAccessExpression
 import org.jetbrains.kotlin.ir.expressions.IrGetValue
 import org.jetbrains.kotlin.ir.types.*
-import org.jetbrains.kotlin.ir.util.constructors
-import org.jetbrains.kotlin.ir.util.functions
-import org.jetbrains.kotlin.ir.util.getPropertyGetter
+import org.jetbrains.kotlin.ir.util.*
 
 inline fun JvmIrBuilder.irArray(arrayType: IrType, block: IrArrayBuilder.() -> Unit): IrExpression =
     IrArrayBuilder(this, arrayType).apply { block() }.build()
@@ -95,19 +93,24 @@ class IrArrayBuilder(val builder: JvmIrBuilder, val arrayType: IrType) {
 
     // Copy a single spread expression, unless it refers to a newly constructed array.
     private fun copyArray(spread: IrExpression): IrExpression {
-        if (spread is IrConstructorCall ||
-            (spread is IrFunctionAccessExpression && spread.symbol == builder.irSymbols.arrayOfNulls))
-            return spread
+        if (spread.type == unwrappedArrayType) {
+            if (spread is IrConstructorCall ||
+                (spread is IrFunctionAccessExpression && spread.symbol == builder.irSymbols.arrayOfNulls))
+                return spread
 
-        return builder.irBlock {
-            val spreadVar = if (spread is IrGetValue) spread.symbol.owner else irTemporary(spread)
-            val size = unwrappedArrayType.classOrNull!!.getPropertyGetter("size")!!
-            val arrayCopyOf = builder.irSymbols.getArraysCopyOfFunction(unwrappedArrayType as IrSimpleType)
-            // TODO consider using System.arraycopy if the requested array type is non-generic.
-            +irCall(arrayCopyOf).apply {
-                putValueArgument(0, coerce(irGet(spreadVar), unwrappedArrayType))
-                putValueArgument(1, irCall(size).apply { dispatchReceiver = irGet(spreadVar) })
+            return builder.irBlock {
+                val spreadVar = if (spread is IrGetValue) spread.symbol.owner else irTemporary(spread)
+                val size = unwrappedArrayType.classOrNull!!.getPropertyGetter("size")!!
+                val arrayCopyOf = builder.irSymbols.getArraysCopyOfFunction(unwrappedArrayType as IrSimpleType)
+                // TODO consider using System.arraycopy if the requested array type is non-generic.
+                +irCall(arrayCopyOf).apply {
+                    putValueArgument(0, coerce(irGet(spreadVar), unwrappedArrayType))
+                    putValueArgument(1, irCall(size).apply { dispatchReceiver = irGet(spreadVar) })
+                }
+
             }
+        } else {
+            return buildComplexArray()
         }
     }
 

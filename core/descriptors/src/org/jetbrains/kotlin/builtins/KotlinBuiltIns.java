@@ -35,7 +35,7 @@ import java.util.*;
 
 import static org.jetbrains.kotlin.builtins.PrimitiveType.*;
 import static org.jetbrains.kotlin.builtins.StandardNames.*;
-import static org.jetbrains.kotlin.resolve.DescriptorUtils.getFqName;
+import static org.jetbrains.kotlin.resolve.DescriptorUtils.*;
 
 public abstract class KotlinBuiltIns {
     private ModuleDescriptorImpl builtInsModule;
@@ -577,6 +577,43 @@ public abstract class KotlinBuiltIns {
     @NotNull
     public KotlinType getIterableType() {
         return getIterable().getDefaultType();
+    }
+
+    @Nullable
+    public KotlinType getSpreadableCollectionElementType(@NotNull KotlinType type) {
+        if (!isSpreadable(type)) return null;
+
+        if (!type.getArguments().isEmpty()) {
+            if (type.getArguments().size() != 1) {
+                throw new IllegalStateException(type.toString());
+            }
+            return type.getArguments().get(0).getType();
+        }
+
+        if (isCharSequence(type) || isString(type))
+            return getCharType();
+
+        KotlinType notNullArrayType = TypeUtils.makeNotNullable(type);
+        KotlinType primitiveType = primitives.invoke().kotlinArrayTypeToPrimitiveKotlinType.get(notNullArrayType);
+        if (primitiveType != null) return primitiveType;
+
+        ModuleDescriptor module = DescriptorUtils.getContainingModuleOrNull(notNullArrayType);
+        if (module != null) {
+            KotlinType unsignedType = getElementTypeForUnsignedArray(notNullArrayType, module);
+            if (unsignedType != null) return unsignedType;
+        }
+
+        throw new IllegalStateException("Could not retrieve element type from: " + type);
+    }
+
+    @NotNull
+    public Boolean isSpreadable(@NotNull KotlinType type) {
+        ClassifierDescriptor iterableDeclarationDescriptor = getIterableType().getConstructor().getDeclarationDescriptor();
+        ClassifierDescriptor charSequenceDeclarationDescriptor = getCharSequence().getDefaultType().getConstructor().getDeclarationDescriptor();
+
+        return (iterableDeclarationDescriptor != null && isSubtypeOfClass(type, iterableDeclarationDescriptor))
+                || (charSequenceDeclarationDescriptor != null && isSubtypeOfClass(type, charSequenceDeclarationDescriptor))
+                || isArrayOrPrimitiveArray(type);
     }
 
     @NotNull

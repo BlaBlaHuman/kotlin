@@ -31,6 +31,7 @@ import org.jetbrains.kotlin.resolve.scopes.receivers.ReceiverValueWithSmartCastI
 import org.jetbrains.kotlin.types.UnwrappedType
 import org.jetbrains.kotlin.types.checker.intersectWrappedTypes
 import org.jetbrains.kotlin.types.checker.prepareArgumentTypeRegardingCaptureTypes
+import org.jetbrains.kotlin.types.typeUtil.builtIns
 import org.jetbrains.kotlin.types.typeUtil.isNullableNothing
 import org.jetbrains.kotlin.types.typeUtil.makeNullable
 import org.jetbrains.kotlin.utils.DFS
@@ -80,6 +81,13 @@ val ReceiverValueWithSmartCastInfo.stableType: UnwrappedType
 
         return prepareArgumentTypeRegardingCaptureTypes(intersectionType) ?: intersectionType
     }
+
+
+internal fun KotlinCallArgument.isSpread(parameter: ParameterDescriptor, languageVersionSettings: LanguageVersionSettings) =
+    this.isSpread ||
+            this.isArrayAssignedAsNamedArgumentInAnnotation(parameter, languageVersionSettings) ||
+            this.isArrayAssignedAsNamedArgumentInFunction(parameter, languageVersionSettings)
+
 
 internal fun KotlinCallArgument.getExpectedType(parameter: ParameterDescriptor, languageVersionSettings: LanguageVersionSettings) =
     if (
@@ -150,7 +158,7 @@ private fun KotlinCallArgument.isArrayAssignedAsNamedArgumentInAnnotation(
     val isAllowedAssigningSingleElementsToVarargsInNamedForm =
         !languageVersionSettings.supportsFeature(LanguageFeature.ProhibitAssigningSingleElementsToVarargsInNamedForm)
 
-    if (isAllowedAssigningSingleElementsToVarargsInNamedForm && !isArrayOrArrayLiteral()) return false
+    if (isAllowedAssigningSingleElementsToVarargsInNamedForm && !isSpreadableCollection()) return false
 
     return this.argumentName != null && parameter.isVararg && isParameterOfAnnotation(parameter)
 }
@@ -164,15 +172,15 @@ private fun KotlinCallArgument.isArrayAssignedAsNamedArgumentInFunction(
     val isAllowedAssigningSingleElementsToVarargsInNamedForm =
         !languageVersionSettings.supportsFeature(LanguageFeature.ProhibitAssigningSingleElementsToVarargsInNamedForm)
 
-    if (isAllowedAssigningSingleElementsToVarargsInNamedForm && !isArrayOrArrayLiteral()) return false
+    if (isAllowedAssigningSingleElementsToVarargsInNamedForm && !isSpreadableCollection()) return false
 
     return this.argumentName != null && parameter.isVararg
 }
 
-fun KotlinCallArgument.isArrayOrArrayLiteral(): Boolean {
+fun KotlinCallArgument.isSpreadableCollection(): Boolean {
     if (this is CollectionLiteralKotlinCallArgument) return true
     if (this !is SimpleKotlinCallArgument) return false
 
     val type = this.receiver.receiverValue.type
-    return KotlinBuiltIns.isArrayOrPrimitiveArray(type)
+    return type.builtIns.isSpreadable(type)
 }

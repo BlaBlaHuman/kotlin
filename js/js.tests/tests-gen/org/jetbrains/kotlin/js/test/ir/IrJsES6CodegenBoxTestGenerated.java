@@ -37572,6 +37572,12 @@ public class IrJsES6CodegenBoxTestGenerated extends AbstractIrJsES6CodegenBoxTes
         }
 
         @Test
+        @TestMetadata("spreadOperatorOnNonArrayTypes.kt")
+        public void testSpreadOperatorOnNonArrayTypes() throws Exception {
+            runTest("compiler/testData/codegen/box/vararg/spreadOperatorOnNonArrayTypes.kt");
+        }
+
+        @Test
         @TestMetadata("useSuspendFunResultAsVararg.kt")
         public void testUseSuspendFunResultAsVararg() throws Exception {
             runTest("compiler/testData/codegen/box/vararg/useSuspendFunResultAsVararg.kt");

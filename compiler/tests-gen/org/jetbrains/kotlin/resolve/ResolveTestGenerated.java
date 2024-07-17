@@ -461,6 +461,11 @@ public class ResolveTestGenerated extends AbstractResolveTest {
             runTest("compiler/testData/resolve/varargs/NilaryVsVararg.resolve");
         }
 
+        @TestMetadata("SpreadOnNonArrayCollections.resolve")
+        public void testSpreadOnNonArrayCollections() throws Exception {
+            runTest("compiler/testData/resolve/varargs/SpreadOnNonArrayCollections.resolve");
+        }
+
         @TestMetadata("UnaryVsVararg.resolve")
         public void testUnaryVsVararg() throws Exception {
             runTest("compiler/testData/resolve/varargs/UnaryVsVararg.resolve");

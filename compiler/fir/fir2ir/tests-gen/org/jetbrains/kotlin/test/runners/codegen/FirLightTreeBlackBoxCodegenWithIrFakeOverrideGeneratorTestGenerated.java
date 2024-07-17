@@ -54734,6 +54734,12 @@ public class FirLightTreeBlackBoxCodegenWithIrFakeOverrideGeneratorTestGenerated
         }
 
         @Test
+        @TestMetadata("callingJavaVarargsWithNonArrayCollections.kt")
+        public void testCallingJavaVarargsWithNonArrayCollections() throws Exception {
+            runTest("compiler/testData/codegen/box/vararg/callingJavaVarargsWithNonArrayCollections.kt");
+        }
+
+        @Test
         @TestMetadata("doNotCopyImmediatelyCreatedArrays.kt")
         public void testDoNotCopyImmediatelyCreatedArrays() throws Exception {
             runTest("compiler/testData/codegen/box/vararg/doNotCopyImmediatelyCreatedArrays.kt");
@@ -54839,6 +54845,12 @@ public class FirLightTreeBlackBoxCodegenWithIrFakeOverrideGeneratorTestGenerated
         @TestMetadata("spreadCopiesArray.kt")
         public void testSpreadCopiesArray() throws Exception {
             runTest("compiler/testData/codegen/box/vararg/spreadCopiesArray.kt");
+        }
+
+        @Test
+        @TestMetadata("spreadOperatorOnNonArrayTypes.kt")
+        public void testSpreadOperatorOnNonArrayTypes() throws Exception {
+            runTest("compiler/testData/codegen/box/vararg/spreadOperatorOnNonArrayTypes.kt");
         }
 
         @Test

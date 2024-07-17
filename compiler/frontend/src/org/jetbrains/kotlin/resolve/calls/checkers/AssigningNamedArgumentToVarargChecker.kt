@@ -12,10 +12,10 @@ import org.jetbrains.kotlin.diagnostics.Errors
 import org.jetbrains.kotlin.diagnostics.Errors.ASSIGNING_SINGLE_ELEMENT_TO_VARARG_IN_NAMED_FORM_FUNCTION
 import org.jetbrains.kotlin.psi.KtExpression
 import org.jetbrains.kotlin.psi.ValueArgument
-import org.jetbrains.kotlin.resolve.calls.util.isArrayOrArrayLiteral
 import org.jetbrains.kotlin.resolve.calls.components.isVararg
 import org.jetbrains.kotlin.resolve.calls.context.ResolutionContext
 import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall
+import org.jetbrains.kotlin.resolve.calls.util.isSpreadable
 import org.jetbrains.kotlin.resolve.descriptorUtil.isParameterOfAnnotation
 
 class AssigningNamedArgumentToVarargChecker : CallChecker {
@@ -51,7 +51,7 @@ class AssigningNamedArgumentToVarargChecker : CallChecker {
         argumentExpression: KtExpression,
         context: ResolutionContext<*>
     ) {
-        if (isArrayOrArrayLiteral(argument, context.trace)) {
+        if (isSpreadable(argument, context.trace)) {
             if (argument.hasSpread()) {
                 // We want to make calls @Foo(value = [A]) and @Foo(value = *[A]) equivalent
                 context.trace.report(Errors.REDUNDANT_SPREAD_OPERATOR_IN_NAMED_FORM_IN_ANNOTATION.on(argumentExpression))
@@ -71,7 +71,7 @@ class AssigningNamedArgumentToVarargChecker : CallChecker {
     ) {
         if (
             context.languageVersionSettings.supportsFeature(AllowAssigningArrayElementsToVarargsInNamedFormForFunctions)
-            && isArrayOrArrayLiteral(argument, context.trace)
+            && isSpreadable(argument, context.trace)
         ) {
             if (argument.hasSpread()) {
                 context.trace.report(Errors.REDUNDANT_SPREAD_OPERATOR_IN_NAMED_FORM_IN_FUNCTION.on(argumentExpression))

@@ -48,7 +48,13 @@ object FirNamedVarargChecker : FirCallChecker() {
             if (type is ConeErrorType) return
             if (argument.expression is FirArrayLiteral) return
 
-            if (allowAssignArray && type.isArrayType) return
+            if (allowAssignArray && type.spreadableCollectionElementType(
+                    context.session.typeContext.newTypeCheckerState(
+                        errorTypesEqualToAnything = false,
+                        stubTypesEqualToAnything = false
+                    )
+                ) != null
+            ) return
 
             if (isAnnotation) {
                 reporter.reportOn(

@@ -95,7 +95,7 @@ import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import static org.jetbrains.kotlin.builtins.KotlinBuiltIns.isInt;
+import static org.jetbrains.kotlin.builtins.KotlinBuiltIns.*;
 import static org.jetbrains.kotlin.codegen.AsmUtil.boxType;
 import static org.jetbrains.kotlin.codegen.AsmUtil.*;
 import static org.jetbrains.kotlin.codegen.BaseExpressionCodegenKt.putReifiedOperationMarkerIfTypeIsReifiedParameter;
@@ -3276,83 +3276,91 @@ public class ExpressionCodegen extends KtVisitor<StackValue, StackValue> impleme
                 : arguments.stream().anyMatch(argument -> argument.getSpreadElement() != null);
 
         if (hasSpreadOperator) {
-            boolean arrayOfReferences = KotlinBuiltIns.isArray(outType);
+            boolean arrayOfReferences = isArray(outType);
+
             if (size == 1) {
-                Type arrayType = getArrayType(arrayOfReferences ? AsmTypes.OBJECT_TYPE : elementType);
-                return StackValue.operation(type, outType, adapter -> {
-                    KtExpression spreadArgument = arguments.get(0).getArgumentExpression();
-                    gen(spreadArgument, type, outType);
-                    if (!canSkipArrayCopyForSpreadArgument(spreadArgument)) {
-                        v.dup();
-                        v.arraylength();
-                        v.invokestatic("java/util/Arrays", "copyOf", Type.getMethodDescriptor(arrayType, arrayType, Type.INT_TYPE), false);
-                    }
-                    if (arrayOfReferences) {
-                        v.checkcast(type);
-                    }
-                    return Unit.INSTANCE;
-                });
+                KotlinType argumentType = kotlinType(arguments.get(0).getArgumentExpression());
+                if (isArrayOrPrimitiveArray(argumentType) && (isPrimitiveArray(argumentType) == isPrimitiveArray(outType))) {
+                    Type arrayType = getArrayType(arrayOfReferences ? AsmTypes.OBJECT_TYPE : elementType);
+                    return StackValue.operation(type, outType, adapter -> {
+                        KtExpression spreadArgument = arguments.get(0).getArgumentExpression();
+                        gen(spreadArgument, type, outType);
+                        if (!canSkipArrayCopyForSpreadArgument(spreadArgument)) {
+                            v.dup();
+                            v.arraylength();
+                            v.invokestatic("java/util/Arrays", "copyOf", Type.getMethodDescriptor(arrayType, arrayType, Type.INT_TYPE),
+                                           false);
+                        }
+                        if (arrayOfReferences) {
+                            v.checkcast(type);
+                        }
+                        return Unit.INSTANCE;
+                    });
+                }
+            }
+
+
+            String owner;
+            String addDescriptor;
+            String toArrayDescriptor;
+            if (arrayOfReferences) {
+                owner = "kotlin/jvm/internal/SpreadBuilder";
+                addDescriptor = "(Ljava/lang/Object;)V";
+                toArrayDescriptor = "([Ljava/lang/Object;)[Ljava/lang/Object;";
             }
             else {
-                String owner;
-                String addDescriptor;
-                String toArrayDescriptor;
-                if (arrayOfReferences) {
-                    owner = "kotlin/jvm/internal/SpreadBuilder";
-                    addDescriptor = "(Ljava/lang/Object;)V";
-                    toArrayDescriptor = "([Ljava/lang/Object;)[Ljava/lang/Object;";
-                }
-                else {
-                    String spreadBuilderClassName = AsmUtil.asmPrimitiveTypeToLangPrimitiveType(elementType).getTypeName().getIdentifier() + "SpreadBuilder";
-                    owner = "kotlin/jvm/internal/" + spreadBuilderClassName;
-                    addDescriptor = "(" + elementType.getDescriptor() + ")V";
-                    toArrayDescriptor = "()" + type.getDescriptor();
-                }
+                String spreadBuilderClassName = AsmUtil.asmPrimitiveTypeToLangPrimitiveType(elementType).getTypeName().getIdentifier() + "SpreadBuilder";
+                owner = "kotlin/jvm/internal/" + spreadBuilderClassName;
+                addDescriptor = "(" + elementType.getDescriptor() + ")V";
+                toArrayDescriptor = "()" + type.getDescriptor();
+            }
 
-                return StackValue.operation(type, adapter -> {
-                    v.anew(Type.getObjectType(owner));
+            return StackValue.operation(type, adapter -> {
+                v.anew(Type.getObjectType(owner));
+                v.dup();
+                v.iconst(size);
+                v.invokespecial(owner, "<init>", "(I)V", false);
+                for (int i = 0; i != size; ++i) {
                     v.dup();
-                    v.iconst(size);
-                    v.invokespecial(owner, "<init>", "(I)V", false);
-                    for (int i = 0; i != size; ++i) {
-                        v.dup();
-                        ValueArgument argument = arguments.get(i);
-                        KtExpression argumentExpression = argument.getArgumentExpression();
-                        KotlinType argumentKotlinType = kotlinType(argumentExpression);
-                        if (argument.getSpreadElement() != null) {
-                            gen(argumentExpression, OBJECT_TYPE, argumentKotlinType);
+                    ValueArgument argument = arguments.get(i);
+                    KtExpression argumentExpression = argument.getArgumentExpression();
+                    KotlinType argumentKotlinType = kotlinType(argumentExpression);
 
-                            if (argumentKotlinType != null && InlineClassesUtilsKt.isInlineClassType(argumentKotlinType)) {
-                                // we're going to pass value of inline class type to j/l/Object, which would result in boxing and then
-                                // will cause check cast error on toArray() call. To mitigate this problem, we unbox this value and pass
-                                // primitive array to the method. Note that bytecode optimisations will remove box/unbox calls.
-                                StackValue.coerce(
-                                        OBJECT_TYPE, argumentKotlinType,
-                                        asmType(argumentKotlinType), argumentKotlinType,
-                                        v
-                                );
-                            }
+                    if (argument.getSpreadElement() != null || (argument.isNamed() && state.getLanguageVersionSettings()
+                    .supportsFeature(LanguageFeature.AllowAssigningArrayElementsToVarargsInNamedFormForFunctions))) {
+                        gen(argumentExpression, OBJECT_TYPE, argumentKotlinType);
 
-                            v.invokevirtual(owner, "addSpread", "(Ljava/lang/Object;)V", false);
+                        if (argumentKotlinType != null && InlineClassesUtilsKt.isInlineClassType(argumentKotlinType)) {
+                            // we're going to pass value of inline class type to j/l/Object, which would result in boxing and then
+                            // will cause check cast error on toArray() call. To mitigate this problem, we unbox this value and pass
+                            // primitive array to the method. Note that bytecode optimisations will remove box/unbox calls.
+                            StackValue.coerce(
+                                    OBJECT_TYPE, argumentKotlinType,
+                                    asmType(argumentKotlinType), argumentKotlinType,
+                                    v
+                            );
                         }
-                        else {
-                            gen(argumentExpression, elementType, argumentKotlinType);
-                            v.invokevirtual(owner, "add", addDescriptor, false);
-                        }
-                    }
-                    if (arrayOfReferences) {
-                        v.dup();
-                        v.invokevirtual(owner, "size", "()I", false);
-                        newArrayInstruction(outType);
-                        v.invokevirtual(owner, "toArray", toArrayDescriptor, false);
-                        v.checkcast(type);
+
+                        v.invokevirtual(owner, "addSpread", "(Ljava/lang/Object;)V", false);
                     }
                     else {
-                        v.invokevirtual(owner, "toArray", toArrayDescriptor, false);
+                        gen(argumentExpression, elementType, argumentKotlinType);
+                        v.invokevirtual(owner, "add", addDescriptor, false);
                     }
-                    return Unit.INSTANCE;
-                });
-            }
+                }
+                if (arrayOfReferences) {
+                    v.dup();
+                    v.invokevirtual(owner, "size", "()I", false);
+                    newArrayInstruction(outType);
+                    v.invokevirtual(owner, "toArray", toArrayDescriptor, false);
+                    v.checkcast(type);
+                }
+                else {
+                    v.invokevirtual(owner, "toArray", toArrayDescriptor, false);
+                }
+                return Unit.INSTANCE;
+            });
+
         }
         else {
             return StackValue.operation(type, outType, adapter -> {
@@ -4840,7 +4848,7 @@ public class ExpressionCodegen extends KtVisitor<StackValue, StackValue> impleme
     }
 
     public void newArrayInstruction(@NotNull KotlinType arrayType) {
-        if (KotlinBuiltIns.isArray(arrayType)) {
+        if (isArray(arrayType)) {
             KotlinType elementKotlinType = arrayType.getArguments().get(0).getType();
             putReifiedOperationMarkerIfTypeIsReifiedParameter(this, elementKotlinType, ReifiedTypeInliner.OperationKind.NEW_ARRAY);
             v.newarray(boxType(typeMapper.mapTypeAsDeclaration(elementKotlinType)));
@@ -4868,7 +4876,7 @@ public class ExpressionCodegen extends KtVisitor<StackValue, StackValue> impleme
             assert arrayKotlinType != null;
             KotlinType elementKotlinType = state.getModule().getBuiltIns().getArrayElementType(arrayKotlinType);
             Type elementType;
-            if (KotlinBuiltIns.isArray(arrayKotlinType)) {
+            if (isArray(arrayKotlinType)) {
                 elementType = boxType(asmType(elementKotlinType), elementKotlinType, typeMapper);
             }
             else {
