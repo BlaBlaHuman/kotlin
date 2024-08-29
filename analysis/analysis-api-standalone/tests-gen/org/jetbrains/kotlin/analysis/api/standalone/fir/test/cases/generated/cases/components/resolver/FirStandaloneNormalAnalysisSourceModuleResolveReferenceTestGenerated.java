@@ -3057,6 +3057,12 @@ public class FirStandaloneNormalAnalysisSourceModuleResolveReferenceTestGenerate
       }
 
       @Test
+      @TestMetadata("KT-69047.kt")
+      public void testKT_69047() {
+        runTest("analysis/analysis-api/testData/components/resolver/singleByPsi/kDoc/extensions/KT-69047.kt");
+      }
+
+      @Test
       @TestMetadata("nonExtensions.kt")
       public void testNonExtensions() {
         runTest("analysis/analysis-api/testData/components/resolver/singleByPsi/kDoc/extensions/nonExtensions.kt");
