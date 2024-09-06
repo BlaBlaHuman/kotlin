@@ -5432,6 +5432,18 @@ public class Fe10IdeNormalAnalysisSourceModuleResolveCandidatesTestGenerated ext
     }
 
     @Test
+    @TestMetadata("MissingTypeArgumentBeforeDot.kt")
+    public void testMissingTypeArgumentBeforeDot() {
+      runTest("analysis/analysis-api/testData/components/resolver/singleByPsi/withErrors/MissingTypeArgumentBeforeDot.kt");
+    }
+
+    @Test
+    @TestMetadata("MissingTypeArgumentBeforeDotQualified.kt")
+    public void testMissingTypeArgumentBeforeDotQualified() {
+      runTest("analysis/analysis-api/testData/components/resolver/singleByPsi/withErrors/MissingTypeArgumentBeforeDotQualified.kt");
+    }
+
+    @Test
     @TestMetadata("NoSelectorInDotQualifiedCall.kt")
     public void testNoSelectorInDotQualifiedCall() {
       runTest("analysis/analysis-api/testData/components/resolver/singleByPsi/withErrors/NoSelectorInDotQualifiedCall.kt");
@@ -5720,6 +5732,12 @@ public class Fe10IdeNormalAnalysisSourceModuleResolveCandidatesTestGenerated ext
       @TestMetadata("ClassNameSecondQualifierBeforeOneUnsresolvedClassWithTwoResolvedWithDot.kt")
       public void testClassNameSecondQualifierBeforeOneUnsresolvedClassWithTwoResolvedWithDot() {
         runTest("analysis/analysis-api/testData/components/resolver/singleByPsi/withErrors/partiallyUnresolvedTypeQualifier/ClassNameSecondQualifierBeforeOneUnsresolvedClassWithTwoResolvedWithDot.kt");
+      }
+
+      @Test
+      @TestMetadata("GenericClassNameBeforeOneUnresolvedClass.kt")
+      public void testGenericClassNameBeforeOneUnresolvedClass() {
+        runTest("analysis/analysis-api/testData/components/resolver/singleByPsi/withErrors/partiallyUnresolvedTypeQualifier/GenericClassNameBeforeOneUnresolvedClass.kt");
       }
     }
   }
