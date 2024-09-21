@@ -369,7 +369,7 @@ internal object KDocReferenceResolver {
      * This is **not** an actual type check, it is just an opinionated approximation.
      * The main guideline was K1 KDoc resolve.
      *
-     * This check might change in the future, as Dokka team advances with KDoc rules.
+     * This check might change in the future, as the Dokka team advances with KDoc rules.
      */
     private fun KaSession.canBeReferencedAsExtensionOn(symbol: KaCallableSymbol, actualReceiverType: KaType): Boolean {
         val extensionReceiverType = symbol.receiverParameter?.returnType ?: return false
